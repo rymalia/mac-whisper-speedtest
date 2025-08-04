@@ -49,8 +49,20 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
         if self.coreml_enabled:
             self.log.info("CoreML support is enabled for whisper.cpp")
 
+            # Map model names to their corresponding CoreML model file names
+            coreml_models_map = {
+                "tiny": "tiny",
+                "base": "base",
+                "small": "small",
+                "medium": "medium",
+                "large": "large-v3-turbo",
+            }
+
+            # Get the CoreML model name (fallback to original model_name if not in map)
+            coreml_model_name = coreml_models_map.get(model_name, model_name)
+
             # Check if CoreML model files exist
-            coreml_model_path = self.models_dir / f"ggml-{model_name}-encoder.mlmodelc"
+            coreml_model_path = self.models_dir / f"ggml-{coreml_model_name}-encoder.mlmodelc"
             if coreml_model_path.exists():
                 self.log.info(f"Found CoreML model at {coreml_model_path}")
             else:
@@ -80,18 +92,23 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
         if self.coreml_enabled:
             self.log.info("Using CoreML acceleration")
 
-        segments = self._model.transcribe(audio, language=None)
+
+
+        # Transcribe with automatic language detection
+        # Explicitly set translate=False to ensure transcription in original language, not translation to English
+        segments = self._model.transcribe(audio, language=None, translate=False)
         text = " ".join([segment.text for segment in segments])
 
         return TranscriptionResult(
             text=text,
             segments=segments,
-            language=None,
+            language=None,  # Language detection is handled natively by the transcribe method
         )
 
     def get_params(self) -> Dict[str, Any]:
         """Get the parameters used for this implementation."""
         return {
+            "model": self.model_name,
             "coreml": self.coreml_enabled,
             "n_threads": self.n_threads,
         }

@@ -1,0 +1,4 @@
+module Jinja {
+    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Jinja-Swift.h"
+    requires objc
+}

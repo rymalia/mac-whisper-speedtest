@@ -1,0 +1,4 @@
+module _RopeModule {
+    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/_RopeModule.build/_RopeModule-Swift.h"
+    requires objc
+}

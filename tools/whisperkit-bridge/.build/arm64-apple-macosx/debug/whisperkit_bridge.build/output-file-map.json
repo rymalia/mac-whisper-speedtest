@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/whisperkit_bridge.build/master.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/Sources/whisperkit-bridge/main.swift": {
+    "dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/whisperkit_bridge.build/main.d",
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/whisperkit_bridge.build/main.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/whisperkit_bridge.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/whisperkit_bridge.build/main.swiftdeps"
+  }
+}

@@ -1,0 +1,27 @@
+version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
+options: "811b5913ccc34782583b6528e1d7c309332c0517724b094d0f99f91eb2e2d475"
+build_start_time: [1754265519, 361960000]
+build_end_time: [1754265522, 468809000]
+inputs:
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/BPETokenizer.swift"
+  : [1754265508, 528346466]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/BertTokenizer.swift"
+  : [1754265508, 528481425]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/ByteEncoder.swift"
+  : [1754265508, 528538259]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/Decoder.swift"
+  : [1754265508, 528658344]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/Normalizer.swift"
+  : [1754265508, 528766887]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/PostProcessor.swift"
+  : [1754265508, 528823429]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/PreTokenizer.swift"
+  : [1754265508, 528922013]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/TokenLattice.swift"
+  : [1754265508, 528980514]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/Tokenizer.swift"
+  : [1754265508, 529090890]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/Trie.swift": [1754265508, 529157391]
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/UnigramTokenizer.swift"
+  : [1754265508, 529210849]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Tokenizers/Utils.swift": [1754265508, 529261267]

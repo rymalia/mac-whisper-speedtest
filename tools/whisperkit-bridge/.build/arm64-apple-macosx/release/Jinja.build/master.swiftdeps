@@ -1,0 +1,14 @@
+version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
+options: "9c7a5ffe4aa88333a6b5334b77138300880853783ee2bfbb78979ead17bb3eaa"
+build_start_time: [1754265514, 395144000]
+build_end_time: [1754265519, 280741000]
+inputs:
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Ast.swift": [1754265508, 475330226]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Environment.swift": [1754265508, 475457686]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Error.swift": [1754265508, 475531437]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Extensions/StringExtension.swift": [1754265508, 475603604]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Lexer.swift": [1754265508, 475736897]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Parser.swift": [1754265508, 475820773]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Runtime.swift": [1754265508, 476083484]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Template.swift": [1754265508, 476161610]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/Jinja/Sources/Utilities.swift": [1754265508, 476281403]

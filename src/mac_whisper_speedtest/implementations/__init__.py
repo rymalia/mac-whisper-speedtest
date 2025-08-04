@@ -46,6 +46,60 @@ try:
 except ImportError:
     logger.warning("Failed to import LightningWhisperMLXImplementation")
 
+# Try to import ParakeetMLXImplementation
+try:
+    if importlib.util.find_spec("parakeet_mlx"):
+        from mac_whisper_speedtest.implementations.parakeet_mlx import ParakeetMLXImplementation
+        available_implementations.append(ParakeetMLXImplementation)
+        logger.info("ParakeetMLXImplementation loaded successfully")
+    else:
+        logger.warning("parakeet-mlx not found, ParakeetMLXImplementation will not be available")
+except ImportError as e:
+    logger.warning(f"Failed to import ParakeetMLXImplementation: {e}")
+
+# Try to import FluidAudioCoreMLImplementation
+try:
+    if importlib.util.find_spec("coremltools"):
+        from mac_whisper_speedtest.implementations.fluidaudio_coreml import FluidAudioCoreMLImplementation
+        available_implementations.append(FluidAudioCoreMLImplementation)
+        logger.info("FluidAudioCoreMLImplementation loaded successfully")
+    else:
+        logger.warning("coremltools not found, FluidAudioCoreMLImplementation will not be available")
+except ImportError as e:
+    logger.warning(f"Failed to import FluidAudioCoreMLImplementation: {e}")
+
+# Try to import WhisperKitImplementation
+try:
+    import platform
+    if platform.system() == "Darwin":  # macOS only
+        from mac_whisper_speedtest.implementations.whisperkit import WhisperKitImplementation
+        available_implementations.append(WhisperKitImplementation)
+        logger.info("WhisperKitImplementation loaded successfully")
+    else:
+        logger.warning("WhisperKit is only supported on macOS, WhisperKitImplementation will not be available")
+except ImportError as e:
+    logger.warning(f"Failed to import WhisperKitImplementation: {e}")
+except RuntimeError as e:
+    logger.warning(f"WhisperKitImplementation not available: {e}")
+
+# Try to import WhisperMPSImplementation
+try:
+    if importlib.util.find_spec("whisper_mps"):
+        import platform
+        if platform.system() == "Darwin":  # macOS only
+            from mac_whisper_speedtest.implementations.whisper_mps import WhisperMPSImplementation
+            available_implementations.append(WhisperMPSImplementation)
+            logger.info("WhisperMPSImplementation loaded successfully")
+        else:
+            logger.warning("whisper-mps is only supported on macOS, WhisperMPSImplementation will not be available")
+    else:
+        logger.warning("whisper-mps not found, WhisperMPSImplementation will not be available")
+except ImportError as e:
+    logger.warning(f"Failed to import WhisperMPSImplementation: {e}")
+except RuntimeError as e:
+    logger.warning(f"WhisperMPSImplementation not available: {e}")
+
+
 
 def get_all_implementations() -> List[Type[WhisperImplementation]]:
     """Get all available Whisper implementations.

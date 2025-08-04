@@ -1,0 +1,57 @@
+{
+  "": {
+    "dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TensorUtils.d",
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TensorUtils.o",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/master.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/LogitsWarper/LogitsProcessor.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/LogitsProcessor.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/LogitsProcessor~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/LogitsProcessor.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/LogitsWarper/LogitsWarper.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/LogitsWarper.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/LogitsWarper~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/LogitsWarper.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/LogitsWarper/RepetitionPenaltyWarper.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/RepetitionPenaltyWarper.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/RepetitionPenaltyWarper~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/RepetitionPenaltyWarper.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/LogitsWarper/TemperatureLogitsWarper.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TemperatureLogitsWarper.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TemperatureLogitsWarper~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TemperatureLogitsWarper.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/LogitsWarper/TopKLogitsWarper.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TopKLogitsWarper.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TopKLogitsWarper~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TopKLogitsWarper.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/LogitsWarper/TopPLogitsWarper.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TopPLogitsWarper.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TopPLogitsWarper~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/TopPLogitsWarper.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/MLMultiArray+Utils.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/MLMultiArray+Utils.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/MLMultiArray+Utils~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/MLMultiArray+Utils.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/MLShapedArray+Utils.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/MLShapedArray+Utils.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/MLShapedArray+Utils~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/MLShapedArray+Utils.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/Math.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/Math.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/Math~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/Math.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TensorUtils/Weights.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/Weights.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/Weights~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TensorUtils.build/Weights.swiftdeps"
+  }
+}

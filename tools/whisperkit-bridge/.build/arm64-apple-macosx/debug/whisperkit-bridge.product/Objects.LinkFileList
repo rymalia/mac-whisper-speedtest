@@ -1,0 +1,189 @@
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Argument.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ArgumentDecoder.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ArgumentDefinition.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ArgumentDiscussion.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ArgumentHelp.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ArgumentSet.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ArgumentVisibility.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/AsyncParsableCommand.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/BashCompletionsGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CodingKeyValidator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CollectionExtensions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CommandConfiguration.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CommandGroup.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CommandParser.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CompletionKind.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/CompletionsGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/DumpHelpGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/EnumerableFlag.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Errors.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ExpressibleByArgument.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/FishCompletionsGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Flag.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/HelpCommand.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/HelpGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/InputKey.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/InputOrigin.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/MessageInfo.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Mutex.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Name.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/NameSpecification.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/NonsenseFlagsValidator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Option.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/OptionGroup.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ParsableArguments.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ParsableArgumentsValidation.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ParsableCommand.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Parsed.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ParsedValues.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ParserError.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Platform.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/PositionalArgumentsValidator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/SequenceExtensions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/SplitArguments.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/StringExtensions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/SwiftExtensions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/Tree.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/UniqueNamesValidator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/UsageGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParser.build/ZshCompletionsGenerator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/ArgumentParserToolInfo.build/ToolInfo.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Generation.build/Generation.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Generation.build/GenerationConfig.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Hub.build/Downloader.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Hub.build/Hub.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Hub.build/HubApi.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Hub.build/resource_bundle_accessor.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/Debugging.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/Descriptions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/FixedWidthInteger+roundUpToPowerOfTwo.swift.o
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/Integer rank.swift.o'
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/RandomAccessCollection+Offsets.swift.o
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/UInt+first and last set bit.swift.o'
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/UInt+reversed.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/UnsafeBufferPointer+Extras.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/UnsafeMutableBufferPointer+Extras.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/_SortedCollection.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/_UniqueCollection.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/_UnsafeBitSet+Index.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/_UnsafeBitSet+_Word.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/_UnsafeBitSet.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Ast.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Environment.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Error.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Lexer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Parser.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Runtime.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/StringExtension.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Template.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Jinja.build/Utilities.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModel.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModelTypes.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Codable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+CustomReflectable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Deprecations.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Descriptions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Elements.SubSequence.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Elements.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Equatable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+ExpressibleByDictionaryLiteral.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Hashable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Initializers.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Invariants.swift.o
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Partial MutableCollection.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Partial RangeReplaceableCollection.swift.o'
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Sendable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Sequence.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary+Values.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedDictionary.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Codable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+CustomReflectable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Descriptions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Diffing.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Equatable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+ExpressibleByArrayLiteral.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Hashable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Initializers.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Insertions.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Invariants.swift.o
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial MutableCollection.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial RangeReplaceableCollection.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra formIntersection.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra formSymmetricDifference.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra formUnion.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra intersection.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra isDisjoint.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra isEqualSet.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra isStrictSubset.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra isStrictSuperset.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra isSubset.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra isSuperset.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra subtract.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra subtracting.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra symmetricDifference.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra union.swift.o'
+'/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Partial SetAlgebra+Basics.swift.o'
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+RandomAccessCollection.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+ReserveCapacity.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Sendable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+SubSequence.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+Testing.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+UnorderedView.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet+UnstableInternals.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/OrderedSet.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable+Bucket.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable+BucketIterator.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable+Constants.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable+CustomStringConvertible.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable+Testing.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable+UnsafeHandle.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_HashTable.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_Hashtable+Header.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/OrderedCollections.build/_UnsafeBitset.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/LogitsProcessor.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/LogitsWarper.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/MLMultiArray+Utils.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/MLShapedArray+Utils.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/Math.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/RepetitionPenaltyWarper.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/TemperatureLogitsWarper.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/TopKLogitsWarper.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/TopPLogitsWarper.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/TensorUtils.build/Weights.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/BPETokenizer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/BertTokenizer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/ByteEncoder.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/Decoder.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/Normalizer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/PostProcessor.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/PreTokenizer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/TokenLattice.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/Tokenizer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/Trie.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/UnigramTokenizer.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Tokenizers.build/Utils.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/AudioChunker.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/AudioEncoder.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/AudioProcessor.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/AudioStreamTranscriber.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/Concurrency.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/Configurations.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/EnergyVAD.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/Extensions+Internal.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/Extensions+Public.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/FeatureExtractor.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/Logging.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/LogitsFilter.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/ModelUtilities.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/Models.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/ResultWriter.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/SegmentSeeker.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/TextDecoder.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/TextUtilities.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/TokenSampler.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/TranscribeTask.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/TranscriptionUtilities.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/VoiceActivityDetector.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/WhisperError.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/WhisperKit.build/WhisperKit.swift.o
+/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/whisperkit_bridge.build/main.swift.o

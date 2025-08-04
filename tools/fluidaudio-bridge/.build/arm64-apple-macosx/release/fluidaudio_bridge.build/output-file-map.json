@@ -1,0 +1,12 @@
+{
+  "": {
+    "dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/fluidaudio_bridge.build/fluidaudio_bridge.d",
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/fluidaudio_bridge.build/fluidaudio_bridge.o",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/fluidaudio_bridge.build/master.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/Sources/fluidaudio-bridge/main.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/fluidaudio_bridge.build/main.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/fluidaudio_bridge.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/fluidaudio_bridge.build/main.swiftdeps"
+  }
+}

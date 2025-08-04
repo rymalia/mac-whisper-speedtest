@@ -3,7 +3,7 @@
 import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Optional
 
 import numpy as np
 import structlog
@@ -19,7 +19,7 @@ class BenchmarkConfig:
     model_name: str
     implementations: List[Type[WhisperImplementation]]
     num_runs: int = 3
-    audio_data: np.ndarray = None
+    audio_data: Optional[np.ndarray] = None
 
 
 @dataclass
@@ -46,14 +46,65 @@ class BenchmarkSummary:
             "MLXWhisperImplementation": "mlx-whisper",
             "InsanelyFastWhisperImplementation": "insanely-fast-whisper",
             "LightningWhisperMLXImplementation": "lightning-whisper-mlx",
-            "FasterWhisperImplementation": "faster-whisper"
+            "FasterWhisperImplementation": "faster-whisper",
+            "ParakeetMLXImplementation": "parakeet-mlx",
+            "FluidAudioCoreMLImplementation": "fluidaudio-coreml",
+            "WhisperKitImplementation": "whisperkit",
+            "WhisperMPSImplementation": "whisper-mps",
         }
 
         for result in sorted_results:
             # Use the short name if available, otherwise use the original
             short_name = name_map.get(result.implementation, result.implementation)
-            params_str = ", ".join([f"{k}={v}" for k, v in result.model_params.items()])
-            print(f"{short_name:<22} {result.transcription_time:<15.4f} {params_str}")
+
+            # Extract the actual model being used for clearer display
+            actual_model = result.model_params.get("model", result.model_name)
+            if isinstance(actual_model, str) and "/" in actual_model:
+                # Show just the model name part for HF repos (e.g., "mlx-community/whisper-small" -> "whisper-small")
+                model_display = actual_model.split("/")[-1]
+            else:
+                model_display = str(actual_model)
+
+            # Create params string excluding the model (since we show it separately)
+            params_dict = {k: v for k, v in result.model_params.items() if k != "model"}
+            params_str = ", ".join([f"{k}={v}" for k, v in params_dict.items()])
+
+            # Combine model and other params
+            if params_str:
+                full_params = f"model={model_display}, {params_str}"
+            else:
+                full_params = f"model={model_display}"
+
+            print(f"{short_name:<22} {result.transcription_time:<15.4f} {full_params}")
+
+            # Add transcription text below each result
+            self._print_transcription(result.text)
+            print()  # Add blank line between implementations
+
+    def _print_transcription(self, text: str, max_length: int = 100) -> None:
+        """Print transcription text with appropriate formatting and truncation.
+
+        Args:
+            text: The transcription text to display
+            max_length: Maximum length before truncation (default: 100)
+        """
+        if not text or text.strip() == "":
+            print("    (no transcription)")
+            return
+
+        # Clean up the text (remove extra whitespace, newlines)
+        cleaned_text = " ".join(text.strip().split())
+
+        # Truncate if necessary
+        if len(cleaned_text) > max_length:
+            truncated_text = cleaned_text[:max_length].rstrip() + "..."
+        else:
+            truncated_text = cleaned_text
+
+        # Print with indentation and quotes for clarity
+        print(f'    "{truncated_text}"')
+
+
 
 
 async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
@@ -65,6 +116,9 @@ async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
     Returns:
         A summary of the benchmark results
     """
+    if config.audio_data is None:
+        raise ValueError("Audio data is required for benchmarking")
+
     summary = BenchmarkSummary(model_name=config.model_name)
 
     for impl_class in config.implementations:
@@ -81,6 +135,7 @@ async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
 
             # Run multiple times and average
             total_time = 0.0
+            last_result = None
             for run in range(config.num_runs):
                 log.info(f"Run {run+1}/{config.num_runs} for {impl_name}")
 
@@ -89,8 +144,16 @@ async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
                 result = await implementation.transcribe(config.audio_data)
                 end_time = time.time()
 
-                run_time = end_time - start_time
+                # Use internal transcription time if available (e.g., from FluidAudio bridge)
+                # This excludes bridge/subprocess overhead for more accurate measurements
+                if hasattr(result, '_transcription_time'):
+                    run_time = result._transcription_time
+                    log.info(f"Using internal transcription time: {run_time:.4f}s "
+                           f"(total with overhead: {end_time - start_time:.4f}s)")
+                else:
+                    run_time = end_time - start_time
                 total_time += run_time
+                last_result = result  # Keep the last result for text
 
                 log.info(f"Run {run+1} completed in {run_time:.4f} seconds")
                 log.info(f"Transcription: {result.text[:50]}...")
@@ -98,13 +161,13 @@ async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
             # Calculate average time
             avg_time = total_time / config.num_runs
 
-            # Add result to summary
+            # Add result to summary (use last result's text)
             summary.results.append(BenchmarkResult(
                 implementation=impl_name,
                 model_name=config.model_name,
                 model_params=implementation.get_params(),
                 transcription_time=avg_time,
-                text=result.text
+                text=last_result.text if last_result else ""
             ))
 
             log.info(f"Average time for {impl_name}: {avg_time:.4f} seconds")

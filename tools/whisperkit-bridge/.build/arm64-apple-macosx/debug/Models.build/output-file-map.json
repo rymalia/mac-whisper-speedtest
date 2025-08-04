@@ -1,0 +1,17 @@
+{
+  "": {
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/master.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Models/LanguageModel.swift": {
+    "dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModel.d",
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModel.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModel.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Models/LanguageModelTypes.swift": {
+    "dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModelTypes.d",
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModelTypes.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModelTypes~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/LanguageModelTypes.swiftdeps"
+  }
+}

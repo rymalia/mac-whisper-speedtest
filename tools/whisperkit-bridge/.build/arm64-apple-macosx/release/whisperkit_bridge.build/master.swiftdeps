@@ -1,0 +1,6 @@
+version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
+options: "29b7e824f9b14cc45ad2aeb8c9659eaba24102be27d50f8d965e257dd25100cd"
+build_start_time: [1754265580, 598071000]
+build_end_time: [1754265581, 382599000]
+inputs:
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/Sources/whisperkit-bridge/main.swift": [1754265569, 990034917]

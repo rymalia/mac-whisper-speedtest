@@ -1,0 +1,12 @@
+{
+  "": {
+    "dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TransformersCLI.build/TransformersCLI.d",
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TransformersCLI.build/TransformersCLI.o",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TransformersCLI.build/master.swiftdeps"
+  },
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/TransformersCLI/main.swift": {
+    "object": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TransformersCLI.build/main.swift.o",
+    "swiftmodule": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TransformersCLI.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/TransformersCLI.build/main.swiftdeps"
+  }
+}

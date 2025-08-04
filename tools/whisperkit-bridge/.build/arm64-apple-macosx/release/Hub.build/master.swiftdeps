@@ -1,0 +1,10 @@
+version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
+options: "b24b1619744ab2e1663105b9fc2fa9978498ee711b3f1358d7acf22744226ffd"
+build_start_time: [1754265512, 207172000]
+build_end_time: [1754265515, 319858000]
+inputs:
+  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/Hub.build/DerivedSources/resource_bundle_accessor.swift"
+  : [1754265510, 249301663]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Hub/Downloader.swift": [1754265508, 526497405]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Hub/Hub.swift": [1754265508, 526962869]
+  "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Hub/HubApi.swift": [1754265508, 527132829]

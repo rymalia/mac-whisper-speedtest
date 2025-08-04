@@ -6,20 +6,25 @@ authors = [
     { name = "An Van" },
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "pyaudio>=0.2.13",
-    "faster-whisper>=0.10.0",
+    "faster-whisper>=1.1.1",
     "mlx>=0.5.0",
-    "numpy>=1.24.0",
+    "mlx-whisper>=0.4.2",
+    "numpy>=2.2.5",
     "soundfile>=0.12.1",
     "typer>=0.9.0",
     "structlog>=24.1.0",
-    "lightning-whisper-mlx>=0.0.10",
     "pywhispercpp",
     "insanely-fast-whisper>=0.0.15",
-    "mlx-whisper>=0.4.2",
     "hf-xet>=1.0.3",
+    "numba>=0.60.0",
+    "huggingface-hub>=0.20.0",
+    "lightning-whisper-mlx>=0.0.10",
+    "parakeet-mlx>=0.3.5",
+    "coremltools>=8.0.0",
+    "whisper-mps>=0.0.7",
 ]
 
 
@@ -32,3 +37,8 @@ mac-whisper-speedtest = "mac_whisper_speedtest.cli:main"
 [build-system]
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest-asyncio>=1.1.0",
+]

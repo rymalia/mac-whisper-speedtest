@@ -1,0 +1,4 @@
+module BitCollections {
+    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/BitCollections.build/BitCollections-Swift.h"
+    requires objc
+}
