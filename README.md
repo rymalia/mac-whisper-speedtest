@@ -3,22 +3,42 @@
 A comprehensive benchmarking tool to compare different Whisper implementations optimized for Apple Silicon, focusing on speed while maintaining accuracy. Now supports **8 different implementations** including native Swift frameworks and MLX-based solutions.
 
 ## Example output
-Test results from MacBook Air M3 8GB:
+
+Test results from MacBook Pro M4 24GB:
+
 ```
-=== Benchmark Summary for 'small' model ===
+=== Benchmark Summary for 'large' model ===
 
 Implementation         Avg Time (s)    Parameters
 --------------------------------------------------------------------------------
-whisperkit             0.3245          model=openai_whisper-small, backend=WhisperKit Swift Bridge
-fluidaudio-coreml      0.4123          model=parakeet-tdt-0.6b-v2-coreml, backend=FluidAudio Swift Bridge
-whisper.cpp            0.4762          model=small, coreml=True, n_threads=4
-mlx-whisper            0.4897          model=whisper-small, device=mlx
-parakeet-mlx           0.5234          model=nvidia/parakeet-tdt-1.1b, device=mlx, dtype=float16
-insanely-fast-whisper  0.5215          model=openai/whisper-small, device_id=mps, batch_size=12, compute_type=float16
-whisper-mps            0.6789          model=small, device=mps, dtype=float16
-lightning-whisper-mlx  1.1470          model=small, batch_size=12, quant=4bit
-faster-whisper         1.5095          model=small, device=cpu, compute_type=int8, beam_size=1, cpu_threads=12
+fluidaudio-coreml      0.1935          model=parakeet-tdt-0.6b-v2-coreml, backend=FluidAudio Swift Bridge, platform=Apple Silicon
+    "Which is the fastest transcription on my Mac?"
+
+parakeet-mlx           0.4995          model=parakeet-tdt-0.6b-v2, implementation=parakeet-mlx, platform=Apple Silicon (MLX)
+    "Which is the fastest transcription on my Mac?"
+
+mlx-whisper            1.0230          model=whisper-large-v3-turbo, quantization=none
+    "Which is the fastest transcription on my Mac?"
+
+insanely-fast-whisper  1.1324          model=whisper-large-v3-turbo, device_id=mps, batch_size=12, compute_type=float16, quantization=4bit
+    "Which is the fastest transcription on my Mac?"
+
+whisper.cpp            1.2293          model=large-v3-turbo-q5_0, coreml=True, n_threads=4
+    "Which is the fastest transcription on my Mac?"
+
+lightning-whisper-mlx  1.8160          model=large, batch_size=12, quant=none
+    "which is the fastest transcription on my Mac"
+
+whisperkit             2.2190          model=large-v3, backend=WhisperKit Swift Bridge, platform=Apple Silicon
+    "Which is the fastest transcription on my Mac?"
+
+whisper-mps            5.3722          model=large, backend=whisper-mps, device=mps, language=None
+    "Which is the fastest transcription on my Mac?"
+
+faster-whisper         6.9613          model=large-v3-turbo, device=cpu, compute_type=int8, beam_size=1, cpu_threads=12, original_model_requested=large
+    "Which is the fastest transcription on my Mac?"
 ```
+
 Demo: https://x.com/anvanvan/status/1913624854584037443
 
 ## Overview
