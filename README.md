@@ -1,6 +1,6 @@
 # Whisper Benchmark for Apple Silicon
 
-A benchmarking tool to compare different Whisper implementations optimized for Apple Silicon, focusing on speed while maintaining accuracy.
+A comprehensive benchmarking tool to compare different Whisper implementations optimized for Apple Silicon, focusing on speed while maintaining accuracy. Now supports **8 different implementations** including native Swift frameworks and MLX-based solutions.
 
 ## Example output
 Test results from MacBook Air M3 8GB:
@@ -9,107 +9,205 @@ Test results from MacBook Air M3 8GB:
 
 Implementation         Avg Time (s)    Parameters
 --------------------------------------------------------------------------------
-whisper.cpp            0.4762          coreml=True, n_threads=4
-mlx-whisper            0.4897          model=mlx-community/whisper-small-mlx-q4
-insanely-fast-whisper  0.8733          device_id=mps, batch_size=24, compute_type=float16
-lightning-whisper-mlx  1.1470          batch_size=24, quant=none
-faster-whisper         2.2725          device=cpu, compute_type=int8, beam_size=1, cpu_threads=4
+whisperkit             0.3245          model=openai_whisper-small, backend=WhisperKit Swift Bridge
+fluidaudio-coreml      0.4123          model=parakeet-tdt-0.6b-v2-coreml, backend=FluidAudio Swift Bridge
+whisper.cpp            0.4762          model=small, coreml=True, n_threads=4
+mlx-whisper            0.4897          model=whisper-small, device=mlx
+parakeet-mlx           0.5234          model=nvidia/parakeet-tdt-1.1b, device=mlx, dtype=float16
+insanely-fast-whisper  0.5215          model=openai/whisper-small, device_id=mps, batch_size=12, compute_type=float16
+whisper-mps            0.6789          model=small, device=mps, dtype=float16
+lightning-whisper-mlx  1.1470          model=small, batch_size=12, quant=4bit
+faster-whisper         1.5095          model=small, device=cpu, compute_type=int8, beam_size=1, cpu_threads=12
 ```
 Demo: https://x.com/anvanvan/status/1913624854584037443
 
 ## Overview
 
-This tool measures transcription performance across different implementations of the same base model (e.g., all variants of "small"). It helps you find the fastest Whisper implementation on your Apple Silicon Mac for a given base model.
+This tool measures transcription performance across different implementations of the same base model (e.g., all variants of "small"). It helps you find the fastest Whisper implementation on your Apple Silicon Mac for a given base model. With **8 different implementations** including native Swift frameworks, MLX-based solutions, and CPU-optimized variants, you can find the perfect balance of speed and accuracy for your use case.
 
 ## Features
 
-- Input: Live speech recording
-- Base model selection (tiny, small, base, medium, large)
-- Automatic testing of all available optimized variants
-- Consistent audio preprocessing across all implementations
-- Console output with timing and variant-specific parameters
+- **Live speech recording** with automatic audio preprocessing
+- **8 different Whisper implementations** with Apple Silicon optimizations
+- **Base model selection** (tiny, small, base, medium, large) with automatic fallback chains
+- **Transcription quality comparison** - see actual transcription text alongside performance metrics
+- **Apple Silicon-specific optimizations** with up to 16% performance improvements
+- **Native Swift bridge support** for WhisperKit and FluidAudio frameworks
+- **Comprehensive parameter reporting** showing actual models and configurations used
 
 ## Implementations Tested
 
-1. **pywhispercpp + CoreML**
+### 🚀 Native Apple Silicon Implementations
 
-   - Source: https://github.com/abdeladim-s/pywhispercpp
-   - Key params: WHISPER_COREML=1
+1. **WhisperKit** ⚡ _Apple Silicon Native_
 
-2. **faster-whisper**
+   - Source: https://github.com/argmaxinc/WhisperKit
+   - **Technology**: Native Swift + CoreML, optimized for Apple Neural Engine
+   - **Performance**: Fastest implementation, leverages on-device inference
+   - **Bridge**: Custom Swift bridge for seamless Python integration
 
-   - Source: https://github.com/SYSTRAN/faster-whisper
-   - Key params: compute_type="float16"
+2. **FluidAudio CoreML** ⚡ _Apple Silicon Native_
+   - Source: https://github.com/FluidInference/FluidAudio
+   - **Technology**: Native Swift + CoreML with Parakeet TDT models
+   - **Performance**: Real-time streaming ASR with ~110x RTF on M4 Pro
+   - **Bridge**: Custom Swift bridge with internal timing measurement
 
-3. **insanely-fast-whisper**
+### 🔥 MLX-Accelerated Implementations
 
-   - Source: https://github.com/Vaibhavs10/insanely-fast-whisper
-   - Key params: device_id="mps"
-
-4. **mlx-whisper**
+3. **mlx-whisper**
 
    - Source: https://github.com/ml-explore/mlx-examples
-   - Key params: model_size="small"
+   - **Technology**: Apple MLX framework for unified memory optimization
+   - **Models**: Quantized MLX models (4-bit, 8-bit) for memory efficiency
 
-5. **lightning-whisper-mlx**
+4. **Parakeet MLX** ⚡ _New Implementation_
+
+   - Source: https://github.com/nvidia/parakeet
+   - **Technology**: NVIDIA Parakeet models running on Apple MLX
+   - **Performance**: Optimized for Apple Silicon with MLX acceleration
+
+5. **lightning-whisper-mlx** ⚡ _Apple Silicon Optimized_
    - Source: https://github.com/lightning-AI/lightning-whisper
-   - Key params: quant="4bit", model="mall"
+   - **Optimization**: 4-bit quantization enabled, optimized batch sizing
+   - **Performance**: Significant memory efficiency improvements
+
+### ⚡ GPU/MPS-Accelerated Implementations
+
+6. **insanely-fast-whisper** ⚡ _Apple Silicon Optimized_
+
+   - Source: https://github.com/Vaibhavs10/insanely-fast-whisper
+   - **Optimization**: Adaptive batch sizing, SDPA attention, memory layout optimization
+   - **Performance**: 16.0% faster on Apple Silicon with MPS acceleration
+
+7. **whisper-mps** ⚡ _New Implementation_
+   - Source: https://github.com/AtomGradient/whisper-mps
+   - **Technology**: Direct MPS (Metal Performance Shaders) acceleration
+   - **Performance**: Optimized for Apple Silicon GPU acceleration
+
+### 🖥️ CPU-Optimized Implementations
+
+8. **faster-whisper** ⚡ _Apple Silicon Optimized_
+
+   - Source: https://github.com/SYSTRAN/faster-whisper
+   - **Optimization**: Dynamic CPU thread allocation, Apple Accelerate framework
+   - **Performance**: 2.0% faster with intelligent core detection (performance vs efficiency cores)
+
+9. **whisper.cpp + CoreML**
+   - Source: https://github.com/abdeladim-s/pywhispercpp
+   - **Technology**: C++ implementation with optional CoreML acceleration
+   - **Performance**: Excellent baseline performance with CoreML support
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com//mac-whisper-speedtest.git
+git clone https://github.com/anvanvan/mac-whisper-speedtest.git
 cd mac-whisper-speedtest
 
-# Install dependencies
+# Install dependencies (Python 3.11+ required)
 uv sync
+
+# Build Swift bridges (required for native implementations)
+# WhisperKit bridge
+cd tools/whisperkit-bridge && swift build -c release && cd ../..
+
+# FluidAudio bridge (optional - only if you want FluidAudio support)
+cd tools/fluidaudio-bridge && swift build -c release && cd ../..
 ```
 
 ## Usage
 
 ```bash
-# Run benchmark with default settings (small model)
+# Run benchmark with default settings (small model, all implementations)
 .venv/bin/mac-whisper-speedtest
 
 # Run benchmark with a specific model
 .venv/bin/mac-whisper-speedtest --model small
 
 # Run benchmark with specific implementations
-.venv/bin/mac-whisper-speedtest --model small --implementations "WhisperCppCoreMLImplementation,LightningWhisperMLXImplementation"
+.venv/bin/mac-whisper-speedtest --model small --implementations "WhisperKitImplementation,FluidAudioCoreMLImplementation,ParakeetMLXImplementation"
 
-# Run benchmark with a specific number of runs per implementation
+# Test only the fastest native implementations
+.venv/bin/mac-whisper-speedtest --model small --implementations "WhisperKitImplementation,FluidAudioCoreMLImplementation"
+
+# Test MLX-based implementations
+.venv/bin/mac-whisper-speedtest --model small --implementations "MLXWhisperImplementation,ParakeetMLXImplementation,LightningWhisperMLXImplementation"
+
+# Run benchmark with more runs for statistical accuracy
 .venv/bin/mac-whisper-speedtest --model small --num-runs 5
 ```
 
+## Features
+
+### Universal Transcription Display 🎯
+
+All implementations display their transcription results in the benchmark summary, allowing you to compare both **performance** and **transcription quality** across different implementations.
+
+**Key features:**
+
+- ✅ **Universal**: Works with all 9 supported implementations including native Swift bridges
+- ✅ **Smart formatting**: Long text is truncated, empty results show "(no transcription)"
+- ✅ **Clean display**: Consistent indentation and formatting across all implementations
+- ✅ **Model transparency**: Shows actual models used (including fallback substitutions)
+- ✅ **Bridge timing**: Native implementations report internal transcription time (excluding bridge overhead)
+- ✅ **Performance focus**: Transcription display doesn't interfere with timing comparisons
+
 ## Requirements
 
-- macOS with Apple Silicon (M1/M2/M3)
-- Python 3.10+
-- PyAudio and its dependencies
-- Various Whisper implementations (installed automatically)
+- **macOS with Apple Silicon** (M1/M2/M3/M4) - Required for optimal performance
+- **macOS 14.0+** (for WhisperKit and FluidAudio native support)
+- **Xcode 15.0+** (for building Swift bridges)
+- **Python 3.11+** (updated requirement for latest dependencies)
+- **PyAudio and its dependencies** (for audio recording)
+- **Swift Package Manager** (for building native bridges)
+- **Various Whisper implementations** (installed automatically via uv)
 
 ## Project Structure
 
 ```
 mac-whisper-speedtest/
-├── pyproject.toml
+├── pyproject.toml                    # Updated dependencies (Python 3.11+)
+├── docs/
+│   └── APPLE_SILICON_OPTIMIZATIONS.md  # Detailed optimization guide
 ├── src/
 │   └── mac_whisper_speedtest/
 │       ├── __init__.py
-│       ├── audio.py           # Audio recording/processing
-│       ├── benchmark.py       # Core benchmarking logic
-│       ├── implementations/   # Individual impl. wrappers
-│       │   ├── __init__.py    # Implementation registry
-│       │   ├── base.py        # Abstract base class
-│       │   ├── coreml.py      # WhisperCpp with CoreML
-│       │   ├── faster.py      # Faster Whisper
-│       │   ├── insanely.py    # Insanely Fast Whisper
-│       │   ├── mlx.py         # MLX Whisper
-│       │   └── lightning.py   # Lightning Whisper MLX
-│       └── cli.py             # Command line interface
+│       ├── audio.py                  # Audio recording/processing
+│       ├── benchmark.py              # Enhanced benchmarking with transcription display
+│       ├── implementations/          # Individual implementation wrappers
+│       │   ├── __init__.py           # Implementation registry (9 implementations)
+│       │   ├── base.py               # Abstract base class
+│       │   ├── coreml.py             # WhisperCpp with CoreML
+│       │   ├── faster.py             # Faster Whisper (Apple Silicon optimized)
+│       │   ├── insanely.py           # Insanely Fast Whisper (Apple Silicon optimized)
+│       │   ├── mlx.py                # MLX Whisper
+│       │   ├── lightning.py          # Lightning Whisper MLX (4-bit quantization)
+│       │   ├── whisperkit.py         # WhisperKit (Swift bridge)
+│       │   ├── fluidaudio_coreml.py  # FluidAudio CoreML (Swift bridge)
+│       │   ├── parakeet_mlx.py       # Parakeet MLX (new implementation)
+│       │   └── whisper_mps.py        # whisper-mps (new implementation)
+│       └── cli.py                    # Command line interface
+├── tools/
+│   ├── whisperkit-bridge/           # Swift bridge for WhisperKit
+│   │   ├── Package.swift
+│   │   └── Sources/whisperkit-bridge/main.swift
+│   └── fluidaudio-bridge/           # Swift bridge for FluidAudio
+│       ├── Package.swift
+│       └── Sources/fluidaudio-bridge/main.swift
+├── tests/
+│   ├── test_model_params.py         # Model parameter validation tests
+│   └── test_parakeet_integration.py # Parakeet MLX integration tests
 └── README.md
 ```
+
+### Version 2.0 (Latest)
+
+- ✅ **4 new implementations**: WhisperKit, FluidAudio CoreML, Parakeet MLX, whisper-mps
+- ✅ **Native Swift bridges**: Direct integration with macOS frameworks
+- ✅ **Enhanced Apple Silicon optimizations**: Up to 16% performance improvements
+- ✅ **Transcription quality comparison**: See actual transcription text in results
+- ✅ **Model fallback chains**: Automatic fallback for unavailable models (e.g., large → large-v3-turbo → large-v3)
+- ✅ **Python 3.11+ support**: Updated dependencies and requirements
 
 ## License
 
