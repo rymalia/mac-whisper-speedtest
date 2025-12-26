@@ -6,7 +6,7 @@ from typing import Any, Dict
 import numpy as np
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 
 
 class LightningWhisperMLXImplementation(WhisperImplementation):
@@ -27,6 +27,10 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
         if platform.system() != "Darwin":
             raise RuntimeError("LightningWhisperMLX is only supported on macOS with Apple Silicon")
 
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Whisper implementation using Lightning Whisper MLX")
+        self.log.info("====== ====== ====== ====== ====== ======")
+    
     def _map_model_name(self, model_name: str) -> str:
         """Map model names to ensure we use the latest versions.
 
@@ -167,6 +171,28 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
             params["language"] = self.language
 
         return params
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        model_map = {
+            "tiny": "mlx-community/whisper-tiny-mlx-q4",
+            "base": "mlx-community/whisper-base-mlx-q4",
+            "small": "mlx-community/whisper-small-mlx-q4",
+            "medium": "mlx-community/whisper-medium-mlx-q4",
+            "large": "mlx-community/whisper-large-v3-mlx",
+            "large-v3": "mlx-community/whisper-large-v3-mlx",
+        }
+
+        repo_id = model_map.get(model_name, f"mlx-community/whisper-{model_name}-mlx-q4")
+
+        return ModelInfo(
+            model_name=repo_id,
+            repo_id=repo_id,
+            cache_paths=[],
+            expected_size_mb=None,
+            verification_method="huggingface",
+            download_trigger="auto"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

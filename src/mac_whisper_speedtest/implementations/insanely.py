@@ -9,7 +9,7 @@ import numpy as np
 import soundfile as sf
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 
 
 class InsanelyFastWhisperImplementation(WhisperImplementation):
@@ -27,6 +27,10 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
         self.compute_type = "float16"
         self.quantization = "4bit"  # Enable 4-bit quantization by default
 
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Whisper implementation using Insanely Fast Whisper")
+        self.log.info("====== ====== ====== ====== ====== ======")
+    
     def _get_optimal_batch_size(self) -> int:
         """Calculate optimal batch size based on available system memory.
 
@@ -120,6 +124,7 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
             model_kwargs["low_cpu_mem_usage"] = True  # Optimize for unified memory architecture
 
         # Configure quantization if available and enabled
+        # Note: bitsandbytes is not supported on macOS, so 4-bit quantization will be skipped on Apple Silicon
         if self.quantization == "4bit" and BitsAndBytesConfig is not None:
             try:
                 quantization_config = BitsAndBytesConfig(
@@ -131,7 +136,8 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
                 model_kwargs["quantization_config"] = quantization_config
                 self.log.info("Using 4-bit quantization with BitsAndBytesConfig")
             except Exception as e:
-                self.log.warning(f"Failed to configure 4-bit quantization: {e}")
+                self.log.warning(f"Failed to configure 4-bit quantization: {e}. "
+                               f"Note: bitsandbytes is not supported on macOS/Apple Silicon.")
 
         self._model = pipeline(
             "automatic-speech-recognition",
@@ -233,6 +239,20 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
             "compute_type": self.compute_type,
             "quantization": self.quantization,
         }
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        # insanely-fast-whisper uses OpenAI models
+        repo_id = f"openai/whisper-{model_name}"
+
+        return ModelInfo(
+            model_name=model_name,
+            repo_id=repo_id,
+            cache_paths=[],
+            expected_size_mb=None,
+            verification_method="huggingface",
+            download_trigger="auto"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

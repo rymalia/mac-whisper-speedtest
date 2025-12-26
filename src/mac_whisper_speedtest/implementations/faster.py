@@ -7,7 +7,7 @@ import structlog
 import subprocess
 import platform
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
@@ -36,6 +36,10 @@ class FasterWhisperImplementation(WhisperImplementation):
         self.beam_size = 1
         self.language = None
         self.cpu_threads = self._get_optimal_cpu_threads()
+
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Whisper implementation using Faster Whisper")
+        self.log.info("====== ====== ====== ====== ====== ======")
 
     def _get_model_fallback_chain(self, model_name: str) -> List[str]:
         """Get the fallback chain for a given model name.
@@ -105,7 +109,7 @@ class FasterWhisperImplementation(WhisperImplementation):
                 # Fallback for Apple Silicon
                 try:
                     import os
-                    cpu_count = os.cpu_count() or 8
+                    cpu_count = os.cpu_count() or 8 # My MacBook Air M3 has 8 cores total (4 performance and 4 efficiency)
                     optimal_threads = max(4, min(12, cpu_count - 2))  # Leave 2 cores for system
                     self.log.info(f"Apple Silicon fallback: {cpu_count} CPUs detected, using {optimal_threads} threads")
                     return optimal_threads
@@ -238,6 +242,24 @@ class FasterWhisperImplementation(WhisperImplementation):
             params["original_model_requested"] = self.original_model_name
 
         return params
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        # faster-whisper uses standard HuggingFace model names with fallback chain
+        fallback_chain = self._get_model_fallback_chain(model_name)
+        primary_model = fallback_chain[0]
+
+        # Map to HuggingFace repo IDs
+        repo_id = f"Systran/faster-whisper-{primary_model}"
+
+        return ModelInfo(
+            model_name=primary_model,
+            repo_id=repo_id,
+            cache_paths=[],  # HuggingFace manages cache automatically
+            expected_size_mb=None,  # Will be determined by HF verification
+            verification_method="huggingface",
+            download_trigger="auto"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

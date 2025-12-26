@@ -6,7 +6,7 @@ from typing import Any, Dict
 import numpy as np
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
@@ -22,6 +22,10 @@ class MLXWhisperImplementation(WhisperImplementation):
         if platform.system() != "Darwin":
             raise RuntimeError("MLX is only supported on macOS with Apple Silicon")
 
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Whisper implementation using MLX Whisper")
+        self.log.info("====== ====== ====== ====== ====== ======")
+    
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
 
@@ -195,6 +199,32 @@ class MLXWhisperImplementation(WhisperImplementation):
             params["quantization"] = "unknown"
 
         return params
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        from pathlib import Path
+
+        # Model mapping (same as in load_model)
+        model_map = {
+            "tiny": "mlx-community/whisper-tiny-mlx",
+            "base": "mlx-community/whisper-base-mlx",
+            "small": "mlx-community/whisper-small-mlx-4bit",
+            "medium": "mlx-community/whisper-medium-mlx-8bit",
+            "large": "mlx-community/whisper-large-v3-turbo",
+            "large-v2": "mlx-community/whisper-large-v2-mlx-4bit",
+            "large-v3": "mlx-community/whisper-large-v3-mlx-8bit",
+        }
+
+        repo_id = model_map.get(model_name, model_name)
+
+        return ModelInfo(
+            model_name=repo_id,
+            repo_id=repo_id,
+            cache_paths=[],  # HuggingFace manages cache automatically
+            expected_size_mb=None,  # Will be determined by HF verification
+            verification_method="huggingface",
+            download_trigger="auto"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

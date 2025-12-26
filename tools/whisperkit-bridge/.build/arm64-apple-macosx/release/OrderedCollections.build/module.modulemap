@@ -1,4 +1,0 @@
-module OrderedCollections {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/OrderedCollections.build/OrderedCollections-Swift.h"
-    requires objc
-}

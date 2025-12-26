@@ -1,4 +1,0 @@
-module Tokenizers {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/Tokenizers.build/Tokenizers-Swift.h"
-    requires objc
-}

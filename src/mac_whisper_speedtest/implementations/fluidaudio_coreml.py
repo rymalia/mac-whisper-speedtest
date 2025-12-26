@@ -11,7 +11,7 @@ import numpy as np
 import soundfile as sf
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
@@ -29,6 +29,11 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
 
         # Find the Swift bridge executable
         self._find_bridge_executable()
+
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: FluidAudio Whisper implementation using Swift bridge to native FluidAudio framework")
+        self.log.info("FluidAudio CoreML implementation using subprocess bridge to Swift framework")
+        self.log.info("====== ====== ====== ====== ====== ======")
 
     def _find_bridge_executable(self):
         """Find the FluidAudio Swift bridge executable."""
@@ -159,6 +164,9 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
         Returns:
             Preprocessed audio array (16kHz, mono, float32, normalized)
         """
+
+        self.log.debug("Preprocessing audio for FluidAudio CoreML")
+        
         # Ensure audio is float32
         if audio.dtype != np.float32:
             audio = audio.astype(np.float32)
@@ -194,10 +202,34 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
     def get_params(self) -> Dict[str, Any]:
         """Get the parameters used for this implementation."""
         return {
-            "model": "parakeet-tdt-0.6b-v2-coreml",
+            "model": f"fluidaudio-{self.model_name}" if self.model_name else "fluidaudio-asr",
             "backend": "FluidAudio Swift Bridge",
             "platform": "Apple Silicon",
         }
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        from pathlib import Path
+
+        # FluidAudio uses its own Parakeet model
+        home = Path.home()
+        model_dir = home / "Library" / "Application Support" / "FluidAudio" / "Models" / "parakeet-tdt-0.6b-v3-coreml"
+
+        cache_paths = [
+            model_dir / "Encoder.mlmodelc",
+            model_dir / "Decoder.mlmodelc",
+            model_dir / "Preprocessor.mlmodelc",
+            model_dir / "JointDecision.mlmodelc",
+        ]
+
+        return ModelInfo(
+            model_name="parakeet-tdt-0.6b-v3-coreml",
+            repo_id="FluidInference/parakeet-tdt-0.6b-v3-coreml",
+            cache_paths=cache_paths,
+            expected_size_mb=460,  # ~425MB Encoder + 23MB Decoder + 12MB other
+            verification_method="size",
+            download_trigger="bridge"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

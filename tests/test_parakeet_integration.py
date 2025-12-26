@@ -52,25 +52,35 @@ class TestParakeetIntegration:
             impl_class = get_implementation_by_name("ParakeetMLXImplementation")
             impl = impl_class()
             
-            # Test model loading
-            model_name = "parakeet-tdt-0.6b-v2"
-            impl.load_model(model_name)
-            
-            # Test get_params
-            params = impl.get_params()
-            assert "model" in params
-            assert "implementation" in params
-            assert params["implementation"] == "parakeet-mlx"
-            
-            # Test transcription
-            result = await impl.transcribe(test_audio)
-            assert isinstance(result, TranscriptionResult)
-            assert hasattr(result, 'text')
-            assert hasattr(result, 'segments')
-            assert hasattr(result, 'language')
-            
-            # Test cleanup
-            impl.cleanup()
+            # Mock the parakeet-mlx model to avoid actual model downloading
+            with patch('parakeet_mlx.from_pretrained') as mock_from_pretrained:
+                mock_model = MagicMock()
+                mock_result = MagicMock()
+                mock_result.text = "test transcription from parakeet"
+                mock_result.sentences = []
+                mock_model.transcribe.return_value = mock_result
+                mock_from_pretrained.return_value = mock_model
+
+                # Test model loading
+                model_name = "parakeet-tdt-0.6b-v2"
+                impl.load_model(model_name)
+
+                # Test get_params
+                params = impl.get_params()
+                assert "model" in params
+                assert "implementation" in params
+                assert params["implementation"] == "parakeet-mlx"
+
+                # Test transcription
+                result = await impl.transcribe(test_audio)
+                assert isinstance(result, TranscriptionResult)
+                assert hasattr(result, 'text')
+                assert hasattr(result, 'segments')
+                assert hasattr(result, 'language')
+                assert result.text == "test transcription from parakeet"
+
+                # Test cleanup
+                impl.cleanup()
             
         except ImportError:
             pytest.skip("parakeet-mlx not available")
@@ -81,25 +91,29 @@ class TestParakeetIntegration:
             impl_class = get_implementation_by_name("ParakeetMLXImplementation")
             impl = impl_class()
             
-            # Test that common model names are mapped correctly
-            test_cases = [
-                ("small", "mlx-community/parakeet-tdt-0.6b-v2"),
-                ("parakeet-tdt-0.6b-v2", "mlx-community/parakeet-tdt-0.6b-v2"),
-                ("parakeet-tdt-1.1b", "mlx-community/parakeet-tdt-1.1b"),
-            ]
-            
-            for input_name, expected_repo in test_cases:
-                # We can't easily test the internal mapping without loading the model,
-                # but we can at least verify the implementation accepts these names
-                try:
+            # Mock the parakeet-mlx model to avoid actual model downloading
+            with patch('parakeet_mlx.from_pretrained') as mock_from_pretrained:
+                mock_model = MagicMock()
+                mock_from_pretrained.return_value = mock_model
+
+                # Test that common model names are mapped correctly
+                test_cases = [
+                    ("small", "mlx-community/parakeet-tdt-0.6b-v2"),
+                    ("parakeet-tdt-0.6b-v2", "mlx-community/parakeet-tdt-0.6b-v2"),
+                    ("parakeet-tdt-1.1b", "mlx-community/parakeet-tdt-1.1b"),
+                ]
+
+                for input_name, expected_repo in test_cases:
+                    # Test the model name mapping by loading and checking params
                     impl.load_model(input_name)
                     params = impl.get_params()
-                    # The actual repo might be different due to internal mapping
+
+                    # Verify the params include the expected repo
                     assert "model" in params
+                    assert params["model"] == expected_repo, \
+                        f"Expected {expected_repo} for input {input_name}, got {params['model']}"
+
                     impl.cleanup()
-                except Exception as e:
-                    # Model loading might fail due to network issues, but that's OK for this test
-                    print(f"Model loading failed for {input_name}: {e}")
                     
         except ImportError:
             pytest.skip("parakeet-mlx not available")

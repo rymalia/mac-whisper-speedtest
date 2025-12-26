@@ -87,8 +87,8 @@ class TestModelParams:
     def test_model_name_mapping_examples(self):
         """Test specific examples of model name mapping."""
         test_cases = [
-            ("LightningWhisperMLXImplementation", "small", "distil-small.en"),
-            ("MLXWhisperImplementation", "small", "mlx-community/whisper-small-mlx-q4"),
+            ("LightningWhisperMLXImplementation", "small", "small"),
+            ("MLXWhisperImplementation", "small", "mlx-community/whisper-small-mlx-4bit"),
             ("ParakeetMLXImplementation", "small", "mlx-community/parakeet-tdt-0.6b-v2"),
         ]
         

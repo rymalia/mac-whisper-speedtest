@@ -6,7 +6,7 @@ from typing import Any, Dict
 import numpy as np
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
@@ -23,6 +23,11 @@ class WhisperMPSImplementation(WhisperImplementation):
         if platform.system() != "Darwin":
             raise RuntimeError("whisper-mps is only supported on macOS with Apple Silicon")
 
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Whisper implementation using whisper-mps with Apple MPS acceleration")
+        self.log.info("Whisper MPS implementation")
+        self.log.info("====== ====== ====== ====== ====== ======")
+    
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
 
@@ -127,6 +132,32 @@ class WhisperMPSImplementation(WhisperImplementation):
             "device": "mps",
             "language": self.language,
         }
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        from mac_whisper_speedtest.utils import get_models_dir
+
+        # whisper-mps downloads to the project's models directory
+        models_dir = get_models_dir()
+        model_file = models_dir / f"{model_name}.pt"
+
+        # Expected sizes (approximate, in MB)
+        size_map = {
+            "tiny": 75,
+            "base": 145,
+            "small": 470,
+            "medium": 1500,
+            "large": 2900,
+        }
+
+        return ModelInfo(
+            model_name=model_name,
+            repo_id=None,  # whisper-mps downloads from openaipublic.azureedge.net, not HuggingFace
+            cache_paths=[model_file],
+            expected_size_mb=size_map.get(model_name, 100),
+            verification_method="size",  # Local file verification
+            download_trigger="native"  # Use implementation's native download via load_model()
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

@@ -1,4 +1,0 @@
-module InternalCollectionsUtilities {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/InternalCollectionsUtilities.build/InternalCollectionsUtilities-Swift.h"
-    requires objc
-}

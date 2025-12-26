@@ -18,33 +18,42 @@ struct FluidAudioBridge: AsyncParsableCommand {
     var format: String = "json"
     
     func run() async throws {
+        print("FluidAudio bridge starting...", to: &standardError)
+
         // Validate input file exists
         let inputURL = URL(fileURLWithPath: inputFile)
         guard FileManager.default.fileExists(atPath: inputFile) else {
             print("Error: Input file does not exist: \(inputFile)", to: &standardError)
             throw ExitCode.failure
         }
-        
+        print("Input file validated: \(inputFile)", to: &standardError)
+
         do {
             // Load audio file
+            print("Loading audio file...", to: &standardError)
             let audioData = try loadAudioFile(url: inputURL)
+            print("Audio loaded: \(audioData.count) samples", to: &standardError)
             
-            // Initialize ASR
-            let asrConfig = ASRConfig(
-                maxSymbolsPerFrame: 3,
-                realtimeMode: false,
-                chunkSizeMs: 1500,
-                tdtConfig: TdtConfig(
-                    durations: [0, 1, 2, 3, 4],
-                    maxSymbolsPerStep: 3
-                )
-            )
-            
+            // Initialize ASR with default configuration
+            print("Creating ASR config...", to: &standardError)
+            let asrConfig = ASRConfig.default
+
+            print("Creating ASR manager...", to: &standardError)
             let asrManager = AsrManager(config: asrConfig)
-            
-            // Load models
+            print("ASR manager created", to: &standardError)
+
+            // Load models - should use cached parakeet-tdt-0.6b-v2-coreml
+            print("Starting model load...", to: &standardError)
+            let modelLoadStart = CFAbsoluteTimeGetCurrent()
             let models = try await AsrModels.downloadAndLoad()
+            let modelLoadTime = CFAbsoluteTimeGetCurrent() - modelLoadStart
+            print("Model load completed in \(modelLoadTime)s", to: &standardError)
+
+            print("Initializing ASR manager...", to: &standardError)
+            let initStart = CFAbsoluteTimeGetCurrent()
             try await asrManager.initialize(models: models)
+            let initTime = CFAbsoluteTimeGetCurrent() - initStart
+            print("ASR manager initialized in \(initTime)s", to: &standardError)
             
             // Transcribe (measure only the actual transcription time)
             let transcriptionStartTime = CFAbsoluteTimeGetCurrent()

@@ -9,7 +9,7 @@ import numpy as np
 import soundfile as sf
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
@@ -26,6 +26,10 @@ class ParakeetMLXImplementation(WhisperImplementation):
         if platform.system() != "Darwin":
             raise RuntimeError("Parakeet MLX is only supported on macOS with Apple Silicon")
 
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Parakeet MLX Whisper implementation using parakeet-mlx for Apple Silicon")
+        self.log.info("====== ====== ====== ====== ====== ======")
+    
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
 
@@ -215,6 +219,42 @@ class ParakeetMLXImplementation(WhisperImplementation):
             "implementation": "parakeet-mlx",
             "platform": "Apple Silicon (MLX)",
         }
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        # Use the same model_map logic as load_model()
+        model_map = {
+            # Specific model names
+            "parakeet-tdt-0.6b": "mlx-community/parakeet-tdt-0.6b-v2",
+            "parakeet-tdt-0.6b-v2": "mlx-community/parakeet-tdt-0.6b-v2",
+            "parakeet-tdt-1.1b": "mlx-community/parakeet-tdt-1.1b",
+            "parakeet-ctc-0.6b": "mlx-community/parakeet-ctc-0.6b",
+            "parakeet-ctc-1.1b": "mlx-community/parakeet-ctc-1.1b",
+            # Size-based mappings (optimized for best performance using newest model)
+            "tiny": "mlx-community/parakeet-tdt-0.6b-v2",
+            "small": "mlx-community/parakeet-tdt-0.6b-v2",
+            "base": "mlx-community/parakeet-tdt-0.6b-v2",
+            "medium": "mlx-community/parakeet-tdt-0.6b-v2",
+            "large": "mlx-community/parakeet-tdt-0.6b-v2",
+            "large-v2": "mlx-community/parakeet-tdt-0.6b-v2",
+            "large-v3": "mlx-community/parakeet-tdt-0.6b-v2",
+        }
+
+        # Get the appropriate model repo
+        repo_id = model_map.get(model_name, model_name)
+
+        # If the model name doesn't start with mlx-community/, assume it's a direct HF repo
+        if not repo_id.startswith("mlx-community/") and "/" not in repo_id:
+            repo_id = f"mlx-community/{repo_id}"
+
+        return ModelInfo(
+            model_name=repo_id,
+            repo_id=repo_id,
+            cache_paths=[],
+            expected_size_mb=None,
+            verification_method="huggingface",
+            download_trigger="auto"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

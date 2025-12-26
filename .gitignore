@@ -199,3 +199,6 @@ build
 models
 mlx_models
 >>>>>>> e25327b (feat: first working version)
+
+.build/
+.claude/

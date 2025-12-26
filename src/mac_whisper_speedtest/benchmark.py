@@ -123,6 +123,7 @@ async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
 
     for impl_class in config.implementations:
         impl_name = impl_class.__name__
+        log.info("====== ====== ====== ====== ====== ====== ======")
         log.info(f"Benchmarking {impl_name} with model {config.model_name}")
 
         try:

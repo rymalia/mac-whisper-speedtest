@@ -1,6 +1,0 @@
-version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
-options: "7e7868c594b88d7ecaf1ae51932214cb9c88cb3daae7e417090b1c3edd1768f9"
-build_start_time: [1754255663, 604698000]
-build_end_time: [1754255664, 294092000]
-inputs:
-  "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/Sources/fluidaudio-bridge/main.swift": [1754255605, 28342867]

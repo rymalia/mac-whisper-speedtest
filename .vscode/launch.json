@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:mac-whisper-speedtest}/tools/whisperkit-bridge",
+            "name": "Debug whisperkit-bridge (tools/whisperkit-bridge)",
+            "target": "whisperkit-bridge",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug whisperkit-bridge (tools/whisperkit-bridge)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:mac-whisper-speedtest}/tools/whisperkit-bridge",
+            "name": "Release whisperkit-bridge (tools/whisperkit-bridge)",
+            "target": "whisperkit-bridge",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release whisperkit-bridge (tools/whisperkit-bridge)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:mac-whisper-speedtest}/tools/fluidaudio-bridge",
+            "name": "Debug fluidaudio-bridge (tools/fluidaudio-bridge)",
+            "target": "fluidaudio-bridge",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug fluidaudio-bridge (tools/fluidaudio-bridge)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:mac-whisper-speedtest}/tools/fluidaudio-bridge",
+            "name": "Release fluidaudio-bridge (tools/fluidaudio-bridge)",
+            "target": "fluidaudio-bridge",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release fluidaudio-bridge (tools/fluidaudio-bridge)"
+        }
+    ]
+}

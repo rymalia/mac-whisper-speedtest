@@ -1,27 +1,36 @@
 """WhisperCpp with CoreML implementation."""
 
 import os
+
+# Set environment variable to enable CoreML
+os.environ["WHISPER_COREML"] = "1"
+
 from typing import Any, Dict
 
 import numpy as np
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
 class WhisperCppCoreMLImplementation(WhisperImplementation):
     """Whisper implementation using pywhispercpp with CoreML support."""
-
+    
     def __init__(self):
         self.log = structlog.get_logger(__name__)
         self.model_name = None
         self.models_dir = get_models_dir()  # use models folder in the project root
-        self.n_threads = 4
+        self.n_threads = 4 # 4
         self.coreml_enabled = False
 
         # Set environment variable to enable CoreML
-        os.environ["WHISPER_COREML"] = "1"
+        # os.environ["WHISPER_COREML"] = "1"
+
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: Whisper implementation using pywhispercpp with CoreML support")
+        self.log.info("WhisperCpp with CoreML implementation")
+        self.log.info("====== ====== ====== ====== ====== ======")
 
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
@@ -112,6 +121,57 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
             "coreml": self.coreml_enabled,
             "n_threads": self.n_threads,
         }
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        from pathlib import Path
+        from mac_whisper_speedtest.utils import get_models_dir
+
+        # Map model names to their quantized GGML equivalents
+        models_map = {
+            "tiny": "tiny-q5_1",
+            "base": "base-q5_1",
+            "small": "small",
+            "medium": "medium-q5_0",
+            "large": "large-v3-turbo-q5_0",
+        }
+        ggml_model_name = models_map.get(model_name, model_name)
+
+        # CoreML model names (for encoder acceleration)
+        coreml_models_map = {
+            "tiny": "tiny",
+            "base": "base",
+            "small": "small",
+            "medium": "medium",
+            "large": "large-v3-turbo",
+        }
+        coreml_model_name = coreml_models_map.get(model_name, model_name)
+
+        models_dir = Path(get_models_dir())
+
+        # Cache paths include GGML model + optional CoreML encoder
+        cache_paths = [
+            models_dir / f"ggml-{ggml_model_name}.bin",
+            models_dir / f"ggml-{coreml_model_name}-encoder.mlmodelc",
+        ]
+
+        # Expected sizes (GGML + CoreML encoder combined, approximate in MB)
+        size_map = {
+            "tiny": 150,      # ~75MB GGML + ~75MB CoreML
+            "base": 250,      # ~142MB GGML + ~108MB CoreML
+            "small": 700,     # ~466MB GGML + ~234MB CoreML
+            "medium": 2200,   # ~1500MB GGML + ~700MB CoreML
+            "large": 4000,    # ~2900MB GGML + ~1100MB CoreML
+        }
+
+        return ModelInfo(
+            model_name=f"{ggml_model_name} + CoreML",
+            repo_id=None,
+            cache_paths=cache_paths,
+            expected_size_mb=size_map.get(model_name, 100),
+            verification_method="size",
+            download_trigger="manual"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

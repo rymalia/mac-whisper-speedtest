@@ -12,6 +12,7 @@ from mac_whisper_speedtest.audio import (
     to_whisper_ndarray,
 )
 from mac_whisper_speedtest.benchmark import BenchmarkConfig, run_benchmark
+from mac_whisper_speedtest.check_models import ModelChecker
 from mac_whisper_speedtest.implementations import get_all_implementations
 from mac_whisper_speedtest.utils import get_models_dir
 
@@ -95,6 +96,65 @@ def benchmark(
     # Run the async parts and get the summary
     summary = asyncio.run(run_async_parts())
     summary.print_summary()
+
+
+@app.command(name="check-models")
+def check_models(
+    model: str = typer.Option("small", help="Model size to check"),
+    implementations: Optional[str] = typer.Option(
+        None, help="Specific implementations to check (comma-separated)"
+    ),
+    download: bool = typer.Option(False, help="Download missing models automatically"),
+    selective: bool = typer.Option(False, help="Select specific implementations to download"),
+):
+    """Check model cache status and optionally download missing models."""
+    # Configure logging
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S"),
+            structlog.dev.ConsoleRenderer(),
+        ]
+    )
+
+    # Get implementations to check
+    all_impls = get_all_implementations()
+    if implementations:
+        # Filter implementations
+        impl_names = [name.strip() for name in implementations.split(",")]
+        impls_to_check = [impl for impl in all_impls if impl.__name__ in impl_names]
+        if not impls_to_check:
+            print(f"No valid implementations found in: {implementations}")
+            print(f"Available implementations: {[impl.__name__ for impl in all_impls]}")
+            return
+    else:
+        impls_to_check = all_impls
+
+    # Create model checker and check status
+    checker = ModelChecker()
+    statuses = checker.check_all_models(model, impls_to_check)
+
+    # Print status table
+    checker.print_status_table(statuses, model)
+    checker.print_summary(statuses)
+
+    # Handle download options
+    if download or selective:
+        async def run_download():
+            if selective:
+                # Interactive selection
+                await checker.interactive_download(statuses, model, impls_to_check)
+            else:
+                # Download all missing
+                await checker.download_missing_models(statuses, model, impls_to_check)
+
+        asyncio.run(run_download())
+    else:
+        # Show interactive menu
+        async def run_interactive():
+            await checker.interactive_menu(statuses, model, impls_to_check)
+
+        asyncio.run(run_interactive())
 
 
 def main():

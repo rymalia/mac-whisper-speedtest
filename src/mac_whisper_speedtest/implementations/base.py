@@ -2,9 +2,21 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, Optional, List
 
 import numpy as np
+
+
+@dataclass
+class ModelInfo:
+    """Information about a model's requirements and cache locations."""
+    model_name: str  # The actual model identifier (e.g., "whisper-medium-mlx-4bit")
+    repo_id: Optional[str] = None  # HuggingFace repo ID if applicable
+    cache_paths: List[Path] = field(default_factory=list)  # Expected cache locations
+    expected_size_mb: Optional[int] = None  # Expected total size in MB
+    verification_method: str = "huggingface"  # "huggingface", "size", or "structure"
+    download_trigger: str = "auto"  # "auto" (HF download), "bridge" (needs Swift bridge), or "manual"
 
 
 @dataclass
@@ -41,6 +53,21 @@ class WhisperImplementation(ABC):
     def get_params(self) -> Dict[str, Any]:
         """Get the parameters used for this implementation."""
         return {}
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get information about model requirements for verification/download.
+
+        Args:
+            model_name: The model size (tiny, base, small, medium, large)
+
+        Returns:
+            ModelInfo with cache locations and verification details
+        """
+        # Default implementation - subclasses should override
+        return ModelInfo(
+            model_name=model_name,
+            verification_method="none"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

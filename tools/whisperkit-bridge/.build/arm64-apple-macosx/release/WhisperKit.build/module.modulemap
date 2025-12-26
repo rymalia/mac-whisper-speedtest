@@ -1,4 +1,0 @@
-module WhisperKit {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/release/WhisperKit.build/WhisperKit-Swift.h"
-    requires objc
-}

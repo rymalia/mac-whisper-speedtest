@@ -1,4 +1,11 @@
-"""WhisperKit implementation using subprocess bridge to Swift framework."""
+"""WhisperKit implementation using subprocess bridge to Swift framework.
+
+IMPORTANT: WhisperKit has a known issue with large model downloads (>1GB).
+If downloads timeout, this implementation automatically creates the necessary
+weights/ directories to allow subsequent download attempts to succeed.
+
+See docs/MODEL_CACHING.md for detailed troubleshooting information.
+"""
 
 import json
 import platform
@@ -11,7 +18,7 @@ import numpy as np
 import soundfile as sf
 import structlog
 
-from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation
+from mac_whisper_speedtest.implementations.base import TranscriptionResult, WhisperImplementation, ModelInfo
 from mac_whisper_speedtest.utils import get_models_dir
 
 
@@ -30,6 +37,11 @@ class WhisperKitImplementation(WhisperImplementation):
         # Find the Swift bridge executable
         self._find_bridge_executable()
 
+        self.log.info("====== ====== ====== ====== ====== ======")
+        self.log.info("Implementation: WhisperKit Whisper implementation using Swift bridge to native WhisperKit framework")
+        self.log.info("WhisperKit implementation using subprocess bridge to Swift framework")
+        self.log.info("====== ====== ====== ====== ====== ======")
+    
     def _find_bridge_executable(self):
         """Find the WhisperKit Swift bridge executable."""
         # Look for the bridge in the tools directory
@@ -42,6 +54,48 @@ class WhisperKitImplementation(WhisperImplementation):
         else:
             raise RuntimeError(f"WhisperKit bridge not found at {bridge_path}. "
                              f"Please build it first by running: cd tools/whisperkit-bridge && swift build -c release")
+
+    def _ensure_weights_directories(self):
+        """Pre-create weights/ directories to prevent download failures.
+
+        WhisperKit has a bug where incomplete downloads leave partial model structures
+        without creating the weights/ subdirectories. When retrying, downloads succeed
+        but fail to move files to the non-existent weights/ directories.
+
+        This workaround pre-creates the directories to ensure downloads can complete.
+        """
+        # Determine the model cache path
+        # WhisperKit uses: ~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/
+        home = Path.home()
+
+        # Build model-specific path based on model name
+        # Standard models: openai_whisper-{model}
+        # Distil models: distil-whisper_distil-{model}
+        if "distil" in self.model_name:
+            model_dir = f"distil-whisper_distil-{self.model_name.replace('distil-', '')}"
+        else:
+            model_dir = f"openai_whisper-{self.model_name}"
+
+        model_cache_path = home / "Documents" / "huggingface" / "models" / "argmaxinc" / "whisperkit-coreml" / model_dir
+
+        # Create weights directories for all three CoreML model components
+        directories_to_create = [
+            model_cache_path / "AudioEncoder.mlmodelc" / "weights",
+            model_cache_path / "TextDecoder.mlmodelc" / "weights",
+            model_cache_path / "MelSpectrogram.mlmodelc" / "weights",
+        ]
+
+        created_any = False
+        for directory in directories_to_create:
+            if not directory.exists():
+                directory.mkdir(parents=True, exist_ok=True)
+                created_any = True
+                self.log.debug(f"Created weights directory: {directory}")
+
+        if created_any:
+            self.log.info(f"Pre-created weights directories for {model_dir} to prevent download failures")
+        else:
+            self.log.debug(f"Weights directories already exist for {model_dir}")
 
     def load_model(self, model_name: str) -> None:
         """Load the WhisperKit model (via Swift bridge).
@@ -76,6 +130,10 @@ class WhisperKitImplementation(WhisperImplementation):
             self.log.info(f"Using WhisperKit turbo model (requested: {model_name}, using: {self.model_name})")
         else:
             self.log.info(f"WhisperKit bridge ready for model: {self.model_name}")
+
+        # Workaround for WhisperKit download issue: pre-create weights/ directories
+        # This prevents failures when incomplete downloads leave partial model structures
+        self._ensure_weights_directories()
 
         # Test that the bridge is working by running it with --help
         try:
@@ -120,12 +178,21 @@ class WhisperKitImplementation(WhisperImplementation):
                 # Write audio as 16kHz mono WAV file
                 sf.write(temp_path, processed_audio, 16000)
 
-                # Call the Swift bridge (longer timeout for first run with model download)
+                # Call the Swift bridge with appropriate timeout
+                # Large models (1.4GB+) need substantial time for initial download
+                # Small/tiny models (<500MB) download quickly
+                if "large" in self.model_name:
+                    timeout = 900  # 15 minutes for large models (1.4GB download)
+                elif "medium" in self.model_name:
+                    timeout = 600  # 10 minutes for medium models
+                else:
+                    timeout = 300  # 5 minutes for small/tiny models
+
                 result = subprocess.run(
                     [self._bridge_path, temp_path, "--format", "json", "--model", self.model_name],
                     capture_output=True,
                     text=True,
-                    timeout=300  # 5 minute timeout for model download on first run
+                    timeout=timeout
                 )
 
                 if result.returncode != 0:
@@ -215,6 +282,58 @@ class WhisperKitImplementation(WhisperImplementation):
             "backend": "WhisperKit Swift Bridge",
             "platform": "Apple Silicon",
         }
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        """Get model information for verification/download."""
+        from pathlib import Path
+
+        # Map model names (same as in load_model)
+        model_map = {
+            "tiny": "tiny",
+            "base": "base",
+            "small": "small",
+            "medium": "medium",
+            "large": "large-v3",
+            "large-v3": "large-v3",
+            "large-v3-turbo": "large-v3-turbo",
+            "large-turbo": "large-v3-turbo"
+        }
+
+        mapped_name = model_map.get(model_name, model_name)
+
+        # Build model-specific path
+        if "distil" in mapped_name:
+            model_dir = f"distil-whisper_distil-{mapped_name.replace('distil-', '')}"
+        else:
+            model_dir = f"openai_whisper-{mapped_name}"
+
+        home = Path.home()
+        model_cache_path = home / "Documents" / "huggingface" / "models" / "argmaxinc" / "whisperkit-coreml" / model_dir
+
+        # Expected cache paths for the three model components
+        cache_paths = [
+            model_cache_path / "AudioEncoder.mlmodelc",
+            model_cache_path / "TextDecoder.mlmodelc",
+            model_cache_path / "MelSpectrogram.mlmodelc",
+        ]
+
+        # Expected sizes (in MB) for different models
+        size_map = {
+            "tiny": 76,
+            "small": 467,
+            "medium": 1400,
+            "large-v3": 2900,
+            "distil-large-v3": 229,
+        }
+
+        return ModelInfo(
+            model_name=mapped_name,
+            repo_id=None,  # WhisperKit downloads via its own mechanism
+            cache_paths=cache_paths,
+            expected_size_mb=size_map.get(mapped_name),
+            verification_method="size",
+            download_trigger="bridge"
+        )
 
     def cleanup(self) -> None:
         """Clean up resources used by this implementation."""

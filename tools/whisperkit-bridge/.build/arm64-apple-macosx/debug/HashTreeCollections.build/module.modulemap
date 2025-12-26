@@ -1,4 +1,0 @@
-module HashTreeCollections {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/HashTreeCollections.build/HashTreeCollections-Swift.h"
-    requires objc
-}
