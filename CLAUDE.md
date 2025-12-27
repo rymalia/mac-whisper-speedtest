@@ -226,6 +226,12 @@ def get_model_info(self, model_name: str) -> ModelInfo:
     )
 ```
 
+**For architectural patterns and integration approaches**, see `docs/IMPLEMENTATION_ARCHITECTURE.md` which provides:
+- Backend technology comparisons (MLX, CoreML, PyTorch MPS, CTranslate2, etc.)
+- Integration patterns (direct Python, Swift bridges, C++ bindings)
+- Detailed explanation of transformers vs wrapper libraries
+- Architecture deep dives for all 9 implementations
+
 ## Apple Silicon Optimizations
 
 Key optimizations per implementation (documented in `docs/APPLE_SILICON_OPTIMIZATIONS.md`):

@@ -27,10 +27,21 @@ class BenchmarkSummary:
     """Summary of benchmark results."""
     model_name: str
     results: List[BenchmarkResult] = field(default_factory=list)
+    audio_data: Optional[np.ndarray] = None
 
     def print_summary(self):
         """Print a summary of the benchmark results."""
         print(f"\n=== Benchmark Summary for '{self.model_name}' model ===\n")
+
+        # Calculate and display actual audio duration
+        if self.audio_data is not None:
+            duration_seconds = len(self.audio_data) / 16000  # 16kHz sample rate
+            minutes = int(duration_seconds // 60)
+            seconds = int(duration_seconds % 60)
+            print(f"[audio recording length: {minutes:02d}:{seconds:02d}]\n")
+        else:
+            print(f"[audio recording length: unknown]\n")
+
         print(f"{'Implementation':<22} {'Avg Time (s)':<15} {'Parameters'}")
         print("-" * 80)
 
@@ -42,7 +53,7 @@ class BenchmarkSummary:
 
         # Map implementation names to shorter versions
         name_map = {
-            "WhisperCppCoreMLImplementation": "whisper.cpp",
+            "WhisperCppCoreMLImplementation": "whisper.cpp-coreml",
             "MLXWhisperImplementation": "mlx-whisper",
             "InsanelyFastWhisperImplementation": "insanely-fast-whisper",
             "LightningWhisperMLXImplementation": "lightning-whisper-mlx",
@@ -119,7 +130,7 @@ async def run_benchmark(config: BenchmarkConfig) -> BenchmarkSummary:
     if config.audio_data is None:
         raise ValueError("Audio data is required for benchmarking")
 
-    summary = BenchmarkSummary(model_name=config.model_name)
+    summary = BenchmarkSummary(model_name=config.model_name, audio_data=config.audio_data)
 
     for impl_class in config.implementations:
         impl_name = impl_class.__name__

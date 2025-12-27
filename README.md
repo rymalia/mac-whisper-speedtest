@@ -122,6 +122,8 @@ This tool measures transcription performance across different implementations of
    - **Technology**: C++ implementation with optional CoreML acceleration
    - **Performance**: Excellent baseline performance with CoreML support
 
+> **📚 For detailed architectural comparison and implementation differences**, see [docs/IMPLEMENTATION_ARCHITECTURE.md](docs/IMPLEMENTATION_ARCHITECTURE.md). This document explains why different implementations have different performance characteristics, integration patterns, and warning behaviors.
+
 ## Installation
 
 ```bash
@@ -233,7 +235,7 @@ mac-whisper-speedtest/
 
 ### Version 2.0 (Latest)
 
-- ✅ **9 working implementations**: FluidAudio-CoreML (FASTEST at 0.08s), WhisperKit, Parakeet MLX, and more
+- ✅ **9 working implementations**: FluidAudio-CoreML (FASTEST in most tests), WhisperKit, Parakeet MLX, and more
 - ✅ **Native Swift bridges**: WhisperKit and FluidAudio integration with macOS frameworks
 - ✅ **FluidAudio working**: Manual model fix enables the fastest implementation (138x real-time factor)
 - ✅ **Enhanced Apple Silicon optimizations**: Up to 16% performance improvements
