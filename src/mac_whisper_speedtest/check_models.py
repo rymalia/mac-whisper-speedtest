@@ -38,6 +38,8 @@ class ModelChecker:
 
     def __init__(self):
         self.hf_cache_dir = Path.home() / ".cache" / "huggingface" / "hub"
+        # Cache verification results to avoid loading same model multiple times
+        self._verification_cache = {}
 
     def check_all_models(self, model_size: str, implementations: List) -> List[ModelStatus]:
         """Check status of all models for the given size.
@@ -64,10 +66,10 @@ class ModelChecker:
                     model_info = impl.get_model_info(model_size)
 
                     # Check HuggingFace cache
-                    hf_status, hf_size = self._check_hf_cache(model_info)
+                    hf_status, hf_size = self._check_hf_cache(model_info, impl, model_size)
 
                     # Check local cache
-                    local_status, local_size = self._check_local_cache(model_info)
+                    local_status, local_size = self._check_local_cache(model_info, impl, model_size)
 
                     status = ModelStatus(
                         implementation=impl_class.__name__,
@@ -86,8 +88,13 @@ class ModelChecker:
 
         return statuses
 
-    def _check_hf_cache(self, model_info: ModelInfo) -> tuple[str, Optional[float]]:
+    def _check_hf_cache(self, model_info: ModelInfo, impl_instance, model_name: str) -> tuple[str, Optional[float]]:
         """Check if model exists in default HuggingFace cache.
+
+        Args:
+            model_info: ModelInfo from the implementation
+            impl_instance: The implementation instance
+            model_name: The model size name (e.g., "small", "large")
 
         Returns:
             Tuple of (status, size_in_mb)
@@ -98,16 +105,20 @@ class ModelChecker:
 
         if model_info.verification_method == "huggingface":
             # Always check default HF cache for this column
-            return self._verify_hf_model(model_info.repo_id, cache_dir=None)
+            return self._verify_hf_model(model_info.repo_id, cache_dir=None,
+                                        impl_instance=impl_instance, model_name=model_name)
 
         return "n/a", None
 
-    def _verify_hf_model(self, repo_id: str, cache_dir: Optional[str] = None) -> tuple[str, Optional[float]]:
+    def _verify_hf_model(self, repo_id: str, cache_dir: Optional[str] = None,
+                        impl_instance=None, model_name: str = None) -> tuple[str, Optional[float]]:
         """Verify HuggingFace model using huggingface_hub tools.
 
         Args:
             repo_id: The HuggingFace repository ID to check
             cache_dir: Specific cache directory to check, or None for default HF cache
+            impl_instance: The implementation instance (for load-based verification)
+            model_name: The model size name (for load-based verification)
 
         Returns:
             Tuple of (status, size_in_mb)
@@ -129,13 +140,24 @@ class ModelChecker:
                     total_size = repo.size_on_disk
                     size_mb = total_size / (1024 * 1024)
 
-                    # Verify the model is actually complete by checking for required files
-                    is_complete, reason = self._verify_hf_repo_completeness(repo, repo_id)
+                    # Quick check for .incomplete markers first (fast path)
+                    repo_path = repo.repo_path
+                    blobs_dir = repo_path / "blobs"
+                    if blobs_dir.exists():
+                        incomplete_files = list(blobs_dir.glob("*.incomplete"))
+                        if incomplete_files:
+                            log.warning(f"Incomplete HF model {repo_id}: Found .incomplete markers")
+                            return "incomplete", size_mb
 
-                    if not is_complete:
-                        log.warning(f"Incomplete HF model {repo_id}: {reason}")
-                        return "incomplete", size_mb
+                    # Verify by actually loading the model (uses exact same code as benchmark)
+                    if impl_instance and model_name:
+                        is_complete = self._verify_by_loading(impl_instance, model_name)
+                        if is_complete == "complete":
+                            return "complete", size_mb
+                        else:
+                            return is_complete, size_mb
 
+                    # Fallback: if no implementation provided, assume complete
                     return "complete", size_mb
 
             return "missing", None
@@ -147,62 +169,66 @@ class ModelChecker:
             log.error(f"Error verifying HF model {repo_id}: {e}")
             return "incomplete", None
 
-    def _verify_hf_repo_completeness(self, repo, repo_id: str) -> tuple[bool, str]:
-        """Verify that a HuggingFace repo has all required files.
+    def _verify_by_loading(self, impl_instance, model_name: str) -> str:
+        """Verify model completeness by actually loading it.
+
+        This uses the exact same code path as benchmark, ensuring perfect alignment.
 
         Args:
-            repo: CachedRepoInfo object from scan_cache_dir
-            repo_id: The repository ID
+            impl_instance: The implementation instance
+            model_name: The model size name (e.g., "small", "large")
 
         Returns:
-            Tuple of (is_complete, reason_if_incomplete)
+            Status: "complete", "incomplete", or "error"
         """
-        # Get all files in the repo
-        file_names = set()
-        for revision in repo.revisions:
-            for file_info in revision.files:
-                file_names.add(file_info.file_name)
+        # Create cache key to avoid loading same model multiple times
+        cache_key = (impl_instance.__class__.__name__, model_name)
+        if cache_key in self._verification_cache:
+            return self._verification_cache[cache_key]
 
-        # Check for incomplete markers (.incomplete files in blobs)
-        repo_path = repo.repo_path
-        blobs_dir = repo_path / "blobs"
-        if blobs_dir.exists():
-            incomplete_files = list(blobs_dir.glob("*.incomplete"))
-            if incomplete_files:
-                return False, f"Found {len(incomplete_files)} .incomplete file(s) - download was interrupted"
+        try:
+            # Try to load the model using the implementation's own load_model method
+            # This is the EXACT same code path used during benchmark
+            impl_instance.load_model(model_name)
 
-        # For faster-whisper and other CTranslate2 models, check for model.bin
-        if "faster-whisper" in repo_id or "Systran" in repo_id:
-            if "model.bin" not in file_names:
-                return False, "Missing required file: model.bin"
+            # If load succeeded, immediately cleanup to release memory
+            if hasattr(impl_instance, 'cleanup'):
+                impl_instance.cleanup()
 
-        # For MLX models, check for expected files
-        elif "mlx" in repo_id.lower():
-            # MLX models should have weights.npz or model.safetensors
-            has_weights = any(f in file_names for f in ["weights.npz", "model.safetensors", "model.npz"])
-            if not has_weights:
-                return False, "Missing model weights (weights.npz or model.safetensors)"
+            # Model loaded successfully - it's complete
+            result = "complete"
+            self._verification_cache[cache_key] = result
+            return result
 
-        # For OpenAI whisper models, check for pytorch_model.bin or model.safetensors
-        elif "openai/whisper" in repo_id:
-            has_model = any(f in file_names for f in ["pytorch_model.bin", "model.safetensors"])
-            if not has_model:
-                return False, "Missing model weights (pytorch_model.bin or model.safetensors)"
+        except FileNotFoundError:
+            # Model files are missing - this is expected for missing models
+            result = "incomplete"
+            self._verification_cache[cache_key] = result
+            return result
 
-        # Generic check: repo should have more than just config files
-        # Config-only repos are usually incomplete downloads
-        config_only_files = {"config.json", "tokenizer.json", "vocabulary.txt", "vocabulary.json",
-                            "tokenizer_config.json", "special_tokens_map.json", "README.md", ".gitattributes"}
+        except Exception as e:
+            # Other errors could indicate corruption or incomplete download
+            error_msg = str(e).lower()
 
-        non_config_files = file_names - config_only_files
-        if len(non_config_files) == 0:
-            return False, "Only configuration files present, no model weights found"
+            # Check for common incomplete download indicators
+            if any(indicator in error_msg for indicator in
+                   ["incomplete", "corrupted", "missing", "not found", "no such file"]):
+                result = "incomplete"
+            else:
+                # Other errors - log and mark as incomplete
+                log.warning(f"Error loading {impl_instance.__class__.__name__} {model_name}: {e}")
+                result = "incomplete"
 
-        # If we get here, the model appears complete
-        return True, ""
+            self._verification_cache[cache_key] = result
+            return result
 
-    def _check_local_cache(self, model_info: ModelInfo) -> tuple[str, Optional[float]]:
+    def _check_local_cache(self, model_info: ModelInfo, impl_instance, model_name: str) -> tuple[str, Optional[float]]:
         """Check if model exists in local cache paths or custom HF cache directory.
+
+        Args:
+            model_info: ModelInfo from the implementation
+            impl_instance: The implementation instance
+            model_name: The model size name (e.g., "small", "large")
 
         Returns:
             Tuple of (status, size_in_mb)
@@ -210,7 +236,8 @@ class ModelChecker:
         # For HF-based implementations that use a custom cache directory (MLX, FasterWhisper)
         # Check that directory instead of cache_paths
         if model_info.hf_cache_dir and model_info.repo_id:
-            return self._verify_hf_model(model_info.repo_id, cache_dir=model_info.hf_cache_dir)
+            return self._verify_hf_model(model_info.repo_id, cache_dir=model_info.hf_cache_dir,
+                                        impl_instance=impl_instance, model_name=model_name)
 
         # For other implementations, check cache_paths
         if not model_info.cache_paths:
@@ -229,7 +256,13 @@ class ModelChecker:
         # All paths exist, calculate size
         total_size_mb = self._calculate_total_size(model_info.cache_paths)
 
-        # Verify size if expected size is provided
+        # For local path-based models, verify by loading
+        # This ensures we use the same verification as benchmark
+        is_complete = self._verify_by_loading(impl_instance, model_name)
+        if is_complete != "complete":
+            return is_complete, total_size_mb
+
+        # Verify size if expected size is provided (secondary check)
         if model_info.expected_size_mb and model_info.verification_method == "size":
             # Allow 10% variance
             expected = model_info.expected_size_mb
@@ -267,7 +300,7 @@ class ModelChecker:
         table.add_column("Model", style="yellow")
         table.add_column("HF Hub Cache", style="magenta")
         table.add_column("Local Cache", style="green")
-        table.add_column("Size (MB)", justify="right")
+        table.add_column("Disk Usage (MB)", justify="right")
 
         for status in statuses:
             # Format status with emojis

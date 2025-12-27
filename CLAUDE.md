@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session Summaries
+
+**IMPORTANT:** After each major coding session, generate a comprehensive session summary and save it to `docs/session-summary-YYYY-MM-DD.md`.
+
+The summary should include:
+- **Key Decisions Made**: Strategic choices and rationale
+- **Files Modified**: List of all changed files with descriptions
+- **Issues Fixed**: Problems identified and solutions implemented
+- **Testing Performed**: Verification and validation steps
+- **Summary Statistics**: Lines changed, bugs fixed, etc.
+
+See `docs/session-summary-2025-12-26.md` for the template format to follow.
+
 ## Project Overview
 
 **Mac-Whisper-Speedtest** is a benchmarking tool that compares 9 different Whisper speech-to-text implementations optimized for Apple Silicon Macs. The goal is to help users identify the fastest implementation for their specific use case while maintaining quality comparisons.
