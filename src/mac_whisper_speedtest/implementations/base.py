@@ -17,6 +17,7 @@ class ModelInfo:
     expected_size_mb: Optional[int] = None  # Expected total size in MB
     verification_method: str = "huggingface"  # "huggingface", "size", or "structure"
     download_trigger: str = "auto"  # "auto" (HF download), "bridge" (needs Swift bridge), or "manual"
+    hf_cache_dir: Optional[str] = None  # Specific HF cache directory to check (None = default HF cache)
 
 
 @dataclass

@@ -162,6 +162,95 @@ This compilation:
 
 **This is why** WhisperKit and FluidAudio can't directly use HuggingFace cached models - they need the compiled `.mlmodelc` format.
 
+## Model Alignment Verification
+
+### Verification Details for Small Model
+
+The following table shows the verified alignment between `check-models` command and actual benchmark behavior for the `small` model size. All implementations have been verified to download and use the correct models.
+
+| Implementation | Model Used | Repo ID | Status |
+|---|---|---|---|
+| **FasterWhisper** | small | `Systran/faster-whisper-small` | ✅ Verified in HF cache |
+| **MLXWhisper** | small | `mlx-community/whisper-small-mlx-4bit` | ✅ Verified in HF cache |
+| **WhisperCppCoreML** | small | Local: `ggml-small.bin` + CoreML encoder | ✅ Verified (633.3 MB) |
+| **InsanelyFastWhisper** | small | `openai/whisper-small` | ✅ Verified in HF cache |
+| **LightningWhisperMLX** | small | `mlx-community/whisper-small-mlx-q4` | ✅ Verified in HF cache |
+| **ParakeetMLX** | small | `mlx-community/parakeet-tdt-0.6b-v2` | ✅ Verified in HF cache (2.3 GB) |
+| **FluidAudioCoreML** | ALL sizes | `FluidInference/parakeet-tdt-0.6b-v3-coreml` | ✅ Uses same model for all sizes |
+| **WhisperKit** | small | Native CoreML (via bridge) | ✅ Verified (463.9 MB) |
+| **WhisperMPS** | small | Local: `small.pt` | ✅ Verified (461.2 MB) |
+
+### Key Findings
+
+1. **All HuggingFace models matched**: Every repo ID returned by `get_model_info()` exists in the HuggingFace cache and matches what `load_model()` actually downloads
+2. **ParakeetMLX naming clarified**: Uses `parakeet-tdt-0.6b-v2` (600M params, 2.3GB) for all small/medium/large sizes - this is intentional as Parakeet is a universal ASR model
+3. **FluidAudio is size-agnostic**: Always uses the same `parakeet-tdt-0.6b-v3-coreml` model regardless of requested size, as it's optimized for real-time streaming
+4. **Local cache models verified**: WhisperCppCoreML, WhisperKit, and WhisperMPS all have correct local cache paths and expected sizes
+5. **Model versioning handled**: For `large` model, implementations correctly map to their preferred versions (`large-v3-turbo` for InsanelyFast, `large-v3` for others)
+6. **Download sources verified**:
+   - HuggingFace Hub: FasterWhisper, MLX, InsanelyFast, Lightning, Parakeet
+   - OpenAI Azure CDN: WhisperMPS
+   - Native Swift bridges: WhisperKit, FluidAudio
+   - Manual installation: WhisperCppCoreML (GGML files)
+
+### Verification Details for Tiny Model
+
+The following table shows the verified alignment between `check-models` command and actual benchmark behavior for the `tiny` model size. This investigation revealed 3 critical issues that were successfully resolved.
+
+| Implementation | Expected Model | Expected Repo ID | Status Before Fix | Issue Found | Fix Applied |
+|---------------|----------------|------------------|-------------------|-------------|-------------|
+| **FasterWhisper** | tiny | `Systran/faster-whisper-tiny` | ❌ Missing | Model exists in custom cache (`models/`) but check-models only scanned default HF cache | Updated `check_models.py` to scan custom models directory |
+| **MLXWhisper** | mlx-community/whisper-tiny-mlx-q4 | `mlx-community/whisper-tiny-mlx-q4` | ❌ Missing | Code expected non-quantized version but quantized q4 version was downloaded | Updated model mapping to use `mlx-community/whisper-tiny-mlx-q4` |
+| **WhisperCppCoreML** | tiny-q5_1 + CoreML | None | ⚠️ Incomplete (46.4MB vs 150MB) | Expected size was wrong (150MB vs actual 50MB) | Updated expected size from 150MB to 50MB |
+| **InsanelyFastWhisper** | tiny | `openai/whisper-tiny` | ✅ Complete | No issues | No changes needed |
+| **LightningWhisperMLX** | mlx-community/whisper-tiny-mlx-q4 | `mlx-community/whisper-tiny-mlx-q4` | ✅ Complete | No issues | No changes needed |
+| **ParakeetMLX** | mlx-community/parakeet-tdt-0.6b-v2 | `mlx-community/parakeet-tdt-0.6b-v2` | ✅ Complete | No issues | No changes needed |
+| **FluidAudioCoreML** | parakeet-tdt-0.6b-v3-coreml | `FluidInference/parakeet-tdt-0.6b-v3-coreml` | ✅ Complete | No issues | No changes needed |
+| **WhisperKit** | tiny | None | ✅ Complete | No issues | No changes needed |
+| **WhisperMPS** | tiny | None | ✅ Complete | No issues | No changes needed |
+
+### Key Findings from Tiny Model Investigation
+
+1. **Custom Cache Directory Support**: `check_models.py` was only scanning the default HuggingFace cache (`~/.cache/huggingface/hub/`) but some implementations like FasterWhisper and MLXWhisper use a custom cache directory (`models/`). Fixed by updating `_verify_hf_model()` to scan both locations.
+
+2. **MLX Quantized Model Update**: MLXWhisper was configured to use the non-quantized `mlx-community/whisper-tiny-mlx` model but a quantized version `mlx-community/whisper-tiny-mlx-q4` exists and was previously downloaded. Updated the model mapping to use the q4 version for better performance.
+
+3. **CoreML Expected Size Correction**: WhisperCppCoreML expected size was set to 150MB but the actual quantized model (tiny-q5_1 + CoreML encoder) is only ~50MB total (31MB GGML + 16MB CoreML). Updated expected size to match reality.
+
+4. **All Models Now Aligned**: After fixes, all 9 implementations show as "ready" with correct model references and sizes matching what's actually used by `load_model()`.
+
+5. **Verification Method Consistency**: 5 implementations use HuggingFace verification, 4 use local file size verification, maintaining consistency with their respective download strategies.
+
+6. **Model Fallback Chains Work Correctly**: FasterWhisper's fallback chain for tiny model (`["tiny"]`) works as expected with the primary model being found.
+
+### Verification Details for Large Model
+
+The following table shows the verified alignment between `check-models` command and actual benchmark behavior for the `large` model size. This investigation revealed 1 critical issue that was successfully resolved.
+
+| Implementation | Expected Model | Expected Repo ID | Status Before Fix | Issue Found | Fix Applied |
+|---------------|----------------|------------------|-------------------|-------------|-------------|
+| **FasterWhisper** | large-v3-turbo | `mobiuslabsgmbh/faster-whisper-large-v3-turbo` | ❌ Missing | Repo ID mismatch: expected `Systran/faster-whisper-large-v3-turbo` but actual is `mobiuslabsgmbh/faster-whisper-large-v3-turbo` | Updated repo ID mapping for large-v3-turbo |
+| **MLXWhisper** | mlx-community/whisper-large-v3-turbo | `mlx-community/whisper-large-v3-turbo` | ✅ Complete | No issues | No changes needed |
+| **WhisperCppCoreML** | large-v3-turbo-q5_0 + CoreML | None | ✅ Complete (1763.5 MB) | No issues (previously fixed) | No changes needed |
+| **InsanelyFastWhisper** | large | `openai/whisper-large-v3-turbo` | ✅ Complete | No issues (previously fixed) | No changes needed |
+| **LightningWhisperMLX** | mlx-community/whisper-large-v3-mlx | `mlx-community/whisper-large-v3-mlx` | ✅ Complete | No issues | No changes needed |
+| **ParakeetMLX** | mlx-community/parakeet-tdt-0.6b-v2 | `mlx-community/parakeet-tdt-0.6b-v2` | ✅ Complete | No issues | No changes needed |
+| **FluidAudioCoreML** | parakeet-tdt-0.6b-v3-coreml | `FluidInference/parakeet-tdt-0.6b-v3-coreml` | ✅ Complete | No issues | No changes needed |
+| **WhisperKit** | large-v3 | None | ✅ Complete | No issues | No changes needed |
+| **WhisperMPS** | large | None | ✅ Complete (2944.3 MB) | No issues (previously fixed) | No changes needed |
+
+### Key Findings from Large Model Investigation
+
+1. **FasterWhisper Repository Source**: The faster-whisper library downloads the large-v3-turbo model from `mobiuslabsgmbh/faster-whisper-large-v3-turbo` instead of the usual `Systran/faster-whisper-{model}` pattern. This is because the large-v3-turbo model is newer and Systran doesn't host it - the community has created it under the mobiuslabsgmbh account.
+
+2. **Custom Cache Scanning Works**: Our earlier fix to scan both default HF cache and custom models directory correctly found the mobiuslabsgmbh model in the custom cache at `models/models--mobiuslabsgmbh--faster-whisper-large-v3-turbo`.
+
+3. **All Other Implementations Verified**: The remaining 8 implementations were already correctly aligned - no issues found with their repo IDs, model names, or cache paths.
+
+4. **Previous Fixes Still Valid**: The fixes applied during the earlier large model investigation (InsanelyFastWhisper repo ID and WhisperMPS path handling) are still working correctly.
+
+5. **Model Sizes Consistent**: All model sizes match expected values and actual downloaded sizes (ranging from 460 MB for FluidAudio to 2.9 GB for WhisperKit/WhisperMPS).
+
 ## The FluidAudio Model Cache Issue
 
 ### What Was Happening

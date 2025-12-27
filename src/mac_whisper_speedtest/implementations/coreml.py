@@ -157,11 +157,11 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
 
         # Expected sizes (GGML + CoreML encoder combined, approximate in MB)
         size_map = {
-            "tiny": 150,      # ~75MB GGML + ~75MB CoreML
+            "tiny": 50,       # ~31MB GGML (q5_1) + ~16MB CoreML
             "base": 250,      # ~142MB GGML + ~108MB CoreML
             "small": 700,     # ~466MB GGML + ~234MB CoreML
             "medium": 2200,   # ~1500MB GGML + ~700MB CoreML
-            "large": 4000,    # ~2900MB GGML + ~1100MB CoreML
+            "large": 1800,    # ~547MB GGML (turbo q5_0) + ~1200MB CoreML (turbo encoder)
         }
 
         return ModelInfo(

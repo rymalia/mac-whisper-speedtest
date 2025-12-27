@@ -242,8 +242,8 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
 
     def get_model_info(self, model_name: str) -> ModelInfo:
         """Get model information for verification/download."""
-        # insanely-fast-whisper uses OpenAI models
-        repo_id = f"openai/whisper-{model_name}"
+        # Use the same model mapping as load_model() to ensure consistency
+        repo_id = self._map_model_name(model_name)
 
         return ModelInfo(
             model_name=model_name,

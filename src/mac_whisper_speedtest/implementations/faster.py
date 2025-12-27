@@ -245,12 +245,18 @@ class FasterWhisperImplementation(WhisperImplementation):
 
     def get_model_info(self, model_name: str) -> ModelInfo:
         """Get model information for verification/download."""
+        from mac_whisper_speedtest.utils import get_models_dir
+
         # faster-whisper uses standard HuggingFace model names with fallback chain
         fallback_chain = self._get_model_fallback_chain(model_name)
         primary_model = fallback_chain[0]
 
         # Map to HuggingFace repo IDs
-        repo_id = f"Systran/faster-whisper-{primary_model}"
+        # Note: large-v3-turbo is hosted under mobiuslabsgmbh, not Systran
+        if primary_model == "large-v3-turbo":
+            repo_id = "mobiuslabsgmbh/faster-whisper-large-v3-turbo"
+        else:
+            repo_id = f"Systran/faster-whisper-{primary_model}"
 
         return ModelInfo(
             model_name=primary_model,
@@ -258,7 +264,8 @@ class FasterWhisperImplementation(WhisperImplementation):
             cache_paths=[],  # HuggingFace manages cache automatically
             expected_size_mb=None,  # Will be determined by HF verification
             verification_method="huggingface",
-            download_trigger="auto"
+            download_trigger="auto",
+            hf_cache_dir=str(get_models_dir())  # faster-whisper uses custom download_root
         )
 
     def cleanup(self) -> None:

@@ -51,7 +51,7 @@ class MLXWhisperImplementation(WhisperImplementation):
         # Map model name to the format expected by mlx-whisper
         # Prefer quantized models for better performance on Apple Silicon
         model_map = {
-            "tiny": "mlx-community/whisper-tiny-mlx",  # No quantized version available
+            "tiny": "mlx-community/whisper-tiny-mlx-q4",
             "base": "mlx-community/whisper-base-mlx",  # Use base for now, fallback available
             "small": "mlx-community/whisper-small-mlx-4bit",
             "medium": "mlx-community/whisper-medium-mlx-8bit",
@@ -203,10 +203,11 @@ class MLXWhisperImplementation(WhisperImplementation):
     def get_model_info(self, model_name: str) -> ModelInfo:
         """Get model information for verification/download."""
         from pathlib import Path
+        from mac_whisper_speedtest.utils import get_models_dir
 
         # Model mapping (same as in load_model)
         model_map = {
-            "tiny": "mlx-community/whisper-tiny-mlx",
+            "tiny": "mlx-community/whisper-tiny-mlx-q4",
             "base": "mlx-community/whisper-base-mlx",
             "small": "mlx-community/whisper-small-mlx-4bit",
             "medium": "mlx-community/whisper-medium-mlx-8bit",
@@ -223,7 +224,8 @@ class MLXWhisperImplementation(WhisperImplementation):
             cache_paths=[],  # HuggingFace manages cache automatically
             expected_size_mb=None,  # Will be determined by HF verification
             verification_method="huggingface",
-            download_trigger="auto"
+            download_trigger="auto",
+            hf_cache_dir=str(get_models_dir())  # MLX uses custom cache directory
         )
 
     def cleanup(self) -> None:

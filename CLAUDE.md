@@ -33,6 +33,27 @@ cd tools/fluidaudio-bridge && swift build -c release && cd ../..
 .venv/bin/mac-whisper-speedtest --model small --num-runs 5
 ```
 
+### Checking and Downloading Models
+```bash
+# Check model cache status for all implementations (interactive menu)
+.venv/bin/mac-whisper-speedtest check-models --model small
+
+# Check specific implementations only
+.venv/bin/mac-whisper-speedtest check-models --model large --implementations "WhisperKitImplementation,MLXWhisperImplementation"
+
+# Automatically download all missing models
+.venv/bin/mac-whisper-speedtest check-models --model small --download
+
+# Interactively select which models to download
+.venv/bin/mac-whisper-speedtest check-models --model small --selective
+```
+
+The `check-models` command verifies:
+- **HuggingFace Hub cache** - Models downloaded via HF ecosystem
+- **Local cache** - Implementation-specific model storage (e.g., WhisperKit CoreML models)
+- **Model integrity** - Size verification and structure validation
+- **Disk space** - Available storage for downloads
+
 ### Testing
 ```bash
 # Run tests
@@ -40,6 +61,9 @@ cd tools/fluidaudio-bridge && swift build -c release && cd ../..
 
 # Run specific test
 .venv/bin/pytest tests/test_model_params.py
+
+# Run benchmark with pre-recorded audio (for testing without microphone)
+python3 test_benchmark.py
 ```
 
 ## Architecture
@@ -51,8 +75,14 @@ The codebase uses an **abstract base class (ABC) pattern** with dynamic implemen
 1. **Base Interface** (`implementations/base.py`):
    - `WhisperImplementation` ABC defines the contract
    - Two required methods: `load_model()` and `async transcribe()`
-   - Optional methods: `get_params()` for reporting configuration, `cleanup()` for resource management
-   - Data models: `TranscriptionResult`, `BenchmarkResult`
+   - Optional methods:
+     - `get_params()` - Report implementation-specific configuration
+     - `get_model_info(model_name)` - Return ModelInfo for cache verification/download
+     - `cleanup()` - Release resources
+   - Data models:
+     - `TranscriptionResult` - Transcription output with text, segments, language
+     - `BenchmarkResult` - Benchmark metrics with timing and parameters
+     - `ModelInfo` - Model cache locations, verification method, download strategy
 
 2. **Dynamic Registry** (`implementations/__init__.py`):
    - Uses `importlib.util.find_spec()` to conditionally import implementations
@@ -116,6 +146,38 @@ Implementations use fallback chains for graceful degradation:
 
 This handles version mismatches across implementations automatically.
 
+### Model Verification and Download System
+
+The `check_models.py` module provides comprehensive model management:
+
+**ModelChecker class** provides:
+- **Cache scanning** - Checks both HuggingFace Hub cache and implementation-specific local caches
+- **Size verification** - Validates model files against expected sizes (±10% tolerance)
+- **Structure validation** - Verifies all required files exist
+- **Download orchestration** - Three download methods:
+  - `auto`: HuggingFace snapshot_download for HF models
+  - `bridge`: Swift bridge execution with dummy audio to trigger native downloads
+  - `native`: Call implementation's load_model() for custom download logic
+  - `manual`: User must manually download (e.g., GGML files for whisper.cpp)
+
+**ModelInfo dataclass** specifies per-implementation model requirements:
+```python
+@dataclass
+class ModelInfo:
+    model_name: str              # Display name (e.g., "small + CoreML")
+    repo_id: Optional[str]       # HuggingFace repo (e.g., "mlx-community/whisper-small-mlx-4bit")
+    cache_paths: List[Path]      # Expected file/directory locations
+    expected_size_mb: Optional[int]  # For size-based verification
+    verification_method: str     # "huggingface", "size", or "structure"
+    download_trigger: str        # "auto", "bridge", "native", or "manual"
+```
+
+**Key features:**
+- Rich terminal UI with color-coded status (✓ complete, ✗ missing, ⚠ incomplete)
+- Interactive menus for selective downloads
+- Disk space checks before downloading
+- Parallel-ready architecture (currently sequential for stability)
+
 ## Adding New Implementations
 
 1. Create new file in `src/mac_whisper_speedtest/implementations/`
@@ -125,6 +187,7 @@ This handles version mismatches across implementations automatically.
    - `async transcribe(audio: np.ndarray) -> TranscriptionResult` - Perform transcription
 4. Implement optional methods:
    - `get_params() -> Dict[str, Any]` - Return implementation-specific parameters for transparency
+   - `get_model_info(model_name: str) -> ModelInfo` - Return cache verification info for check-models command
    - `cleanup()` - Clean up resources
 5. Add conditional import to `implementations/__init__.py`:
    ```python
@@ -136,6 +199,19 @@ This handles version mismatches across implementations automatically.
        logger.warning("Failed to import YourImplementation")
    ```
 6. Add display name mapping in `benchmark.py` `print_summary()` method
+
+**Example get_model_info() implementation:**
+```python
+def get_model_info(self, model_name: str) -> ModelInfo:
+    return ModelInfo(
+        model_name=f"mlx-community/whisper-{model_name}-mlx-4bit",
+        repo_id=f"mlx-community/whisper-{model_name}-mlx-4bit",
+        cache_paths=[],  # HF manages cache automatically
+        expected_size_mb=None,  # Not needed for HF verification
+        verification_method="huggingface",
+        download_trigger="auto"
+    )
+```
 
 ## Apple Silicon Optimizations
 
@@ -172,18 +248,25 @@ Key optimizations per implementation (documented in `docs/APPLE_SILICON_OPTIMIZA
 src/mac_whisper_speedtest/
 ├── __init__.py           # Package metadata
 ├── __main__.py           # Module entry point
-├── cli.py                # Typer-based CLI, async audio recording
+├── cli.py                # Typer-based CLI, benchmark and check-models commands
 ├── audio.py              # PyAudio recording, 16kHz preprocessing
 ├── benchmark.py          # Benchmark runner, result aggregation
+├── check_models.py       # Model verification and download system (501 lines)
 ├── utils.py              # Helper utilities (models dir, project root)
 └── implementations/      # Implementation wrappers
     ├── __init__.py       # Dynamic registry with conditional imports
-    ├── base.py           # ABC and data models
+    ├── base.py           # ABC and data models (ModelInfo, TranscriptionResult, etc.)
     └── *.py              # Individual implementations (9 total)
 
 tools/
 ├── whisperkit-bridge/    # Swift Package Manager project
 └── fluidaudio-bridge/    # Swift Package Manager project
+
+tests/
+├── test_model_params.py      # Parameter reporting tests
+└── test_parakeet_integration.py  # Parakeet MLX integration tests
+
+test_benchmark.py         # Standalone test script using pre-recorded audio
 ```
 
 ## Dependencies
@@ -195,6 +278,8 @@ tools/
 - `soundfile` - Audio I/O
 - `numpy>=2.2.5` - Array processing
 - `structlog` - Structured logging
+- `rich>=13.7.0` - Terminal formatting for check-models command
+- `huggingface-hub>=0.20.0` - Model cache verification and downloads
 
 ### Whisper Implementations (all optional except faster-whisper and mlx-whisper)
 - `faster-whisper>=1.1.1`
@@ -232,6 +317,26 @@ def get_params(self) -> Dict[str, Any]:
         "batch_size": 12,
         "quantization": "4bit"
     }
+```
+
+### Model Information
+Implement `get_model_info()` to enable model verification and downloads:
+```python
+def get_model_info(self, model_name: str) -> ModelInfo:
+    """Provide model cache information for verification."""
+    from pathlib import Path
+
+    return ModelInfo(
+        model_name=f"{model_name} + CoreML",  # Display name
+        repo_id=None,  # HuggingFace repo ID if applicable
+        cache_paths=[
+            Path("/path/to/model.bin"),
+            Path("/path/to/encoder.mlmodelc")
+        ],
+        expected_size_mb=500,  # For size-based verification
+        verification_method="size",  # or "huggingface", "structure"
+        download_trigger="manual"  # or "auto", "bridge", "native"
+    )
 ```
 
 ### Resource Cleanup

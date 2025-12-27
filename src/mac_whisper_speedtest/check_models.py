@@ -87,7 +87,7 @@ class ModelChecker:
         return statuses
 
     def _check_hf_cache(self, model_info: ModelInfo) -> tuple[str, Optional[float]]:
-        """Check if model exists in HuggingFace cache.
+        """Check if model exists in default HuggingFace cache.
 
         Returns:
             Tuple of (status, size_in_mb)
@@ -97,12 +97,17 @@ class ModelChecker:
             return "n/a", None
 
         if model_info.verification_method == "huggingface":
-            return self._verify_hf_model(model_info.repo_id)
+            # Always check default HF cache for this column
+            return self._verify_hf_model(model_info.repo_id, cache_dir=None)
 
         return "n/a", None
 
-    def _verify_hf_model(self, repo_id: str) -> tuple[str, Optional[float]]:
+    def _verify_hf_model(self, repo_id: str, cache_dir: Optional[str] = None) -> tuple[str, Optional[float]]:
         """Verify HuggingFace model using huggingface_hub tools.
+
+        Args:
+            repo_id: The HuggingFace repository ID to check
+            cache_dir: Specific cache directory to check, or None for default HF cache
 
         Returns:
             Tuple of (status, size_in_mb)
@@ -110,7 +115,12 @@ class ModelChecker:
         try:
             from huggingface_hub import scan_cache_dir
 
-            cache_info = scan_cache_dir()
+            # Check specified cache directory or default HF cache
+            if cache_dir:
+                cache_info = scan_cache_dir(cache_dir=cache_dir)
+            else:
+                # Check default HF cache (~/.cache/huggingface/hub/)
+                cache_info = scan_cache_dir()
 
             # Find the repo in cache
             for repo in cache_info.repos:
@@ -119,8 +129,13 @@ class ModelChecker:
                     total_size = repo.size_on_disk
                     size_mb = total_size / (1024 * 1024)
 
-                    # For now, assume complete if it exists
-                    # TODO: Could verify against remote metadata
+                    # Verify the model is actually complete by checking for required files
+                    is_complete, reason = self._verify_hf_repo_completeness(repo, repo_id)
+
+                    if not is_complete:
+                        log.warning(f"Incomplete HF model {repo_id}: {reason}")
+                        return "incomplete", size_mb
+
                     return "complete", size_mb
 
             return "missing", None
@@ -132,12 +147,72 @@ class ModelChecker:
             log.error(f"Error verifying HF model {repo_id}: {e}")
             return "incomplete", None
 
+    def _verify_hf_repo_completeness(self, repo, repo_id: str) -> tuple[bool, str]:
+        """Verify that a HuggingFace repo has all required files.
+
+        Args:
+            repo: CachedRepoInfo object from scan_cache_dir
+            repo_id: The repository ID
+
+        Returns:
+            Tuple of (is_complete, reason_if_incomplete)
+        """
+        # Get all files in the repo
+        file_names = set()
+        for revision in repo.revisions:
+            for file_info in revision.files:
+                file_names.add(file_info.file_name)
+
+        # Check for incomplete markers (.incomplete files in blobs)
+        repo_path = repo.repo_path
+        blobs_dir = repo_path / "blobs"
+        if blobs_dir.exists():
+            incomplete_files = list(blobs_dir.glob("*.incomplete"))
+            if incomplete_files:
+                return False, f"Found {len(incomplete_files)} .incomplete file(s) - download was interrupted"
+
+        # For faster-whisper and other CTranslate2 models, check for model.bin
+        if "faster-whisper" in repo_id or "Systran" in repo_id:
+            if "model.bin" not in file_names:
+                return False, "Missing required file: model.bin"
+
+        # For MLX models, check for expected files
+        elif "mlx" in repo_id.lower():
+            # MLX models should have weights.npz or model.safetensors
+            has_weights = any(f in file_names for f in ["weights.npz", "model.safetensors", "model.npz"])
+            if not has_weights:
+                return False, "Missing model weights (weights.npz or model.safetensors)"
+
+        # For OpenAI whisper models, check for pytorch_model.bin or model.safetensors
+        elif "openai/whisper" in repo_id:
+            has_model = any(f in file_names for f in ["pytorch_model.bin", "model.safetensors"])
+            if not has_model:
+                return False, "Missing model weights (pytorch_model.bin or model.safetensors)"
+
+        # Generic check: repo should have more than just config files
+        # Config-only repos are usually incomplete downloads
+        config_only_files = {"config.json", "tokenizer.json", "vocabulary.txt", "vocabulary.json",
+                            "tokenizer_config.json", "special_tokens_map.json", "README.md", ".gitattributes"}
+
+        non_config_files = file_names - config_only_files
+        if len(non_config_files) == 0:
+            return False, "Only configuration files present, no model weights found"
+
+        # If we get here, the model appears complete
+        return True, ""
+
     def _check_local_cache(self, model_info: ModelInfo) -> tuple[str, Optional[float]]:
-        """Check if model exists in local cache paths.
+        """Check if model exists in local cache paths or custom HF cache directory.
 
         Returns:
             Tuple of (status, size_in_mb)
         """
+        # For HF-based implementations that use a custom cache directory (MLX, FasterWhisper)
+        # Check that directory instead of cache_paths
+        if model_info.hf_cache_dir and model_info.repo_id:
+            return self._verify_hf_model(model_info.repo_id, cache_dir=model_info.hf_cache_dir)
+
+        # For other implementations, check cache_paths
         if not model_info.cache_paths:
             return "n/a", None
 
@@ -231,9 +306,19 @@ class ModelChecker:
 
     def print_summary(self, statuses: List[ModelStatus]):
         """Print summary statistics."""
-        ready = sum(1 for s in statuses if s.local_cache_status == "complete")
-        missing = sum(1 for s in statuses if s.local_cache_status == "missing")
-        incomplete = sum(1 for s in statuses if s.local_cache_status == "incomplete")
+        # A model is ready if it's complete in either HF cache or local cache
+        ready = sum(1 for s in statuses if
+            s.local_cache_status == "complete" or s.hf_cache_status == "complete")
+
+        # A model is missing if both caches are missing/n/a (and neither is complete)
+        missing = sum(1 for s in statuses if
+            s.local_cache_status in ["missing", "n/a"] and
+            s.hf_cache_status in ["missing", "n/a"])
+
+        # A model is incomplete if either cache is incomplete and neither is complete
+        incomplete = sum(1 for s in statuses if
+            (s.local_cache_status == "incomplete" or s.hf_cache_status == "incomplete") and
+            s.local_cache_status != "complete" and s.hf_cache_status != "complete")
 
         console.print("\n[bold]Summary:[/bold]")
         console.print(f"  • {ready} models ready")
@@ -389,10 +474,14 @@ class ModelChecker:
 
             console.print(f"  Downloading from {status.model_info.repo_id}...")
 
+            # Download to custom cache if specified (for MLX/FasterWhisper)
+            # Otherwise use default cache
+            cache_dir = status.model_info.hf_cache_dir if status.model_info.hf_cache_dir else None
+
             # Download the model
             snapshot_download(
                 repo_id=status.model_info.repo_id,
-                local_dir=None,  # Uses default cache
+                cache_dir=cache_dir,
             )
 
             console.print(f"  [green]✓ Downloaded {status.model_info.model_name}[/green]")
@@ -433,15 +522,89 @@ class ModelChecker:
             console.print(f"  [red]✗ Failed to trigger native download: {e}[/red]")
 
     def copy_from_hf_cache(self, statuses: List[ModelStatus]):
-        """Copy models from HuggingFace cache to local caches."""
-        # This is mainly for FluidAudio which needs models copied to Application Support
+        """Copy models from HuggingFace cache to custom cache directories."""
         console.print("\n[bold]Copying models from HuggingFace cache...[/bold]")
 
+        copied_count = 0
         for status in statuses:
-            if status.hf_cache_status == "complete" and status.local_cache_status in ["missing", "incomplete"]:
-                console.print(f"  {status.implementation}: [yellow]Copy not yet implemented[/yellow]")
+            # Only copy if model exists in HF cache but missing from local cache
+            if status.hf_cache_status == "complete" and status.local_cache_status == "missing":
+                # Only works for implementations using custom HF cache directories
+                if status.model_info.hf_cache_dir and status.model_info.repo_id:
+                    if self._copy_hf_to_custom_cache(status):
+                        copied_count += 1
+                else:
+                    console.print(f"  {status.implementation}: [yellow]Not applicable (doesn't use custom cache)[/yellow]")
 
-        console.print("[green]Copy operation complete[/green]")
+        if copied_count > 0:
+            console.print(f"\n[green]✓ Successfully copied {copied_count} model(s)[/green]")
+        else:
+            console.print("\n[yellow]No models needed to be copied[/yellow]")
+
+    def _copy_hf_to_custom_cache(self, status: ModelStatus) -> bool:
+        """Copy a model from default HF cache to custom cache directory.
+
+        Returns:
+            True if successful, False otherwise
+        """
+        import shutil
+        from huggingface_hub import scan_cache_dir
+
+        try:
+            console.print(f"\n[cyan]Copying {status.implementation} ({status.model_info.repo_id})...[/cyan]")
+
+            # Find the model in default HF cache
+            default_cache_info = scan_cache_dir()
+            source_path = None
+
+            for repo in default_cache_info.repos:
+                if repo.repo_id == status.model_info.repo_id:
+                    source_path = repo.repo_path
+                    break
+
+            if not source_path:
+                console.print(f"  [red]✗ Model not found in default HF cache[/red]")
+                return False
+
+            # Construct destination path in custom cache
+            # HF cache structure: models--{org}--{model}
+            dest_dir = Path(status.model_info.hf_cache_dir)
+            repo_folder = f"models--{status.model_info.repo_id.replace('/', '--')}"
+            dest_path = dest_dir / repo_folder
+
+            # Check if already exists (shouldn't happen but just in case)
+            if dest_path.exists():
+                console.print(f"  [yellow]⚠ Already exists at {dest_path}[/yellow]")
+                return False
+
+            # Copy the entire repository directory
+            console.print(f"  Copying from: {source_path}")
+            console.print(f"  To: {dest_path}")
+
+            shutil.copytree(source_path, dest_path, symlinks=True)
+
+            # Verify the copy
+            if dest_path.exists():
+                size_mb = self._calculate_directory_size(dest_path)
+                console.print(f"  [green]✓ Successfully copied {size_mb:.1f} MB[/green]")
+                return True
+            else:
+                console.print(f"  [red]✗ Copy failed - destination not found[/red]")
+                return False
+
+        except Exception as e:
+            console.print(f"  [red]✗ Copy failed: {e}[/red]")
+            import traceback
+            console.print(f"  [dim]{traceback.format_exc()}[/dim]")
+            return False
+
+    def _calculate_directory_size(self, path: Path) -> float:
+        """Calculate total size of directory in MB."""
+        total = 0
+        for item in path.rglob('*'):
+            if item.is_file():
+                total += item.stat().st_size
+        return total / (1024 * 1024)
 
     async def interactive_menu(self, statuses: List[ModelStatus], model_size: str, implementations: List):
         """Show interactive menu for user actions."""
