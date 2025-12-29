@@ -31,21 +31,24 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
         self.log.info("Implementation: Whisper implementation using Lightning Whisper MLX")
         self.log.info("====== ====== ====== ====== ====== ======")
     
-    def _map_model_name(self, model_name: str) -> str:
-        """Map model names to ensure we use the latest versions.
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for Lightning Whisper MLX.
 
-        Args:
-            model_name: The requested model name
+        Maps standard Whisper model names to quantized MLX community models.
+        Uses base class standardized pattern for consistency.
 
-        Returns:
-            The mapped model name (e.g., "large" -> "large-v3")
+        Note: LightningWhisperMLX manages its own HuggingFace downloads internally.
+        These repos are used by check-models for verification only.
         """
-        # Default "large" to the latest large model version
-        if model_name == "large":
-            return "large-v3"
-
-        # Return other model names unchanged
-        return model_name
+        return {
+            "tiny": "mlx-community/whisper-tiny-mlx-q4",
+            "base": "mlx-community/whisper-base-mlx",
+            "small": "mlx-community/whisper-small-mlx-4bit",
+            "medium": "mlx-community/whisper-medium-mlx-8bit",
+            "large": "mlx-community/whisper-large-v3-turbo",
+            "large-v2": "mlx-community/whisper-large-v2-mlx-4bit",
+            "large-v3": "mlx-community/whisper-large-v3-mlx-8bit",
+        }
 
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
@@ -62,21 +65,23 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
             self.log.error("Failed to import lightning_whisper_mlx. Make sure it's installed.")
             raise
 
-        # Map model name to ensure we use the latest versions
-        mapped_model_name = self._map_model_name(model_name)
+        # LightningWhisperMLX expects simple model names and handles HuggingFace downloads internally
+        # Map "large" to "large-v3" for consistency with other implementations
+        model_for_loading = "large-v3" if model_name == "large" else model_name
 
-        # Store both original and mapped model names
+        # Store original model name
         self.model_name = model_name
-        self._mapped_model_name = mapped_model_name
+        self._model_for_loading = model_for_loading
 
         # Create the Lightning Whisper MLX instance with default model management
+        # Note: LightningWhisperMLX downloads from its own preferred repos
         try:
             self.whisper_model = LightningWhisperMLX(
-                model=mapped_model_name,
+                model=model_for_loading,
                 batch_size=self.batch_size,
                 quant=self.quant
             )
-            self.log.info(f"LightningWhisperMLX model {model_name} loaded successfully")
+            self.log.info(f"LightningWhisperMLX model {model_name} loaded successfully (using {model_for_loading})")
         except Exception as e:
             self.log.error(f"Failed to load model {model_name}: {e}")
             raise
@@ -173,17 +178,13 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
         return params
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
-        model_map = {
-            "tiny": "mlx-community/whisper-tiny-mlx-q4",
-            "base": "mlx-community/whisper-base-mlx-q4",
-            "small": "mlx-community/whisper-small-mlx-q4",
-            "medium": "mlx-community/whisper-medium-mlx-q4",
-            "large": "mlx-community/whisper-large-v3-mlx",
-            "large-v3": "mlx-community/whisper-large-v3-mlx",
-        }
+        """Get model information for verification/download.
 
-        repo_id = model_map.get(model_name, f"mlx-community/whisper-{model_name}-mlx-q4")
+        Uses the same model mapping as load_model() to ensure consistency
+        between verification and actual model loading.
+        """
+        # Use base class helper (same as load_model) - single source of truth
+        repo_id = self._map_model_name(model_name)
 
         return ModelInfo(
             model_name=repo_id,

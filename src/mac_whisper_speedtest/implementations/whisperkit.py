@@ -97,19 +97,13 @@ class WhisperKitImplementation(WhisperImplementation):
         else:
             self.log.debug(f"Weights directories already exist for {model_dir}")
 
-    def load_model(self, model_name: str) -> None:
-        """Load the WhisperKit model (via Swift bridge).
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for WhisperKit.
 
-        Args:
-            model_name: Model size (tiny, base, small, medium, large)
+        Maps standard Whisper model names to WhisperKit-compatible model names.
+        Uses base class standardized pattern for consistency.
         """
-        if not self._bridge_path:
-            raise RuntimeError("WhisperKit bridge not available")
-
-        # Map model names to WhisperKit model names
-        # Note: Turbo models are available but may have compatibility issues.
-        # Use explicit model names like "large-v3-turbo" to access turbo variants.
-        model_map = {
+        return {
             "tiny": "tiny",
             "base": "base",
             "small": "small",
@@ -119,8 +113,18 @@ class WhisperKitImplementation(WhisperImplementation):
             "large-v3-turbo": "large-v3-turbo",  # Explicit turbo model access
             "large-turbo": "large-v3-turbo"     # Alternative turbo access
         }
-        
-        self.model_name = model_map.get(model_name, model_name)
+
+    def load_model(self, model_name: str) -> None:
+        """Load the WhisperKit model (via Swift bridge).
+
+        Args:
+            model_name: Model size (tiny, base, small, medium, large)
+        """
+        if not self._bridge_path:
+            raise RuntimeError("WhisperKit bridge not available")
+
+        # Use base class helper to map model names
+        self.model_name = self._map_model_name(model_name)
 
         # Log model information
         if model_name == "large":
@@ -284,22 +288,15 @@ class WhisperKitImplementation(WhisperImplementation):
         }
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
+        """Get model information for verification/download.
+
+        Uses base class helper for model mapping to ensure consistency
+        between verification and actual model loading.
+        """
         from pathlib import Path
 
-        # Map model names (same as in load_model)
-        model_map = {
-            "tiny": "tiny",
-            "base": "base",
-            "small": "small",
-            "medium": "medium",
-            "large": "large-v3",
-            "large-v3": "large-v3",
-            "large-v3-turbo": "large-v3-turbo",
-            "large-turbo": "large-v3-turbo"
-        }
-
-        mapped_name = model_map.get(model_name, model_name)
+        # Use base class helper (same as load_model) - single source of truth
+        mapped_name = self._map_model_name(model_name)
 
         # Build model-specific path
         if "distil" in mapped_name:

@@ -29,7 +29,33 @@ class ParakeetMLXImplementation(WhisperImplementation):
         self.log.info("====== ====== ====== ====== ====== ======")
         self.log.info("Implementation: Parakeet MLX Whisper implementation using parakeet-mlx for Apple Silicon")
         self.log.info("====== ====== ====== ====== ====== ======")
-    
+
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for Parakeet MLX.
+
+        Maps standard Whisper model names and Parakeet-specific names to HuggingFace repo IDs.
+        Uses base class standardized pattern for consistency.
+
+        Note: All standard Whisper sizes map to parakeet-tdt-0.6b-v2 as it's the
+        recommended general-purpose model.
+        """
+        return {
+            # Specific model names
+            "parakeet-tdt-0.6b": "mlx-community/parakeet-tdt-0.6b-v2",
+            "parakeet-tdt-0.6b-v2": "mlx-community/parakeet-tdt-0.6b-v2",
+            "parakeet-tdt-1.1b": "mlx-community/parakeet-tdt-1.1b",
+            "parakeet-ctc-0.6b": "mlx-community/parakeet-ctc-0.6b",
+            "parakeet-ctc-1.1b": "mlx-community/parakeet-ctc-1.1b",
+            # Size-based mappings (all map to the best general-purpose model)
+            "tiny": "mlx-community/parakeet-tdt-0.6b-v2",
+            "small": "mlx-community/parakeet-tdt-0.6b-v2",
+            "base": "mlx-community/parakeet-tdt-0.6b-v2",
+            "medium": "mlx-community/parakeet-tdt-0.6b-v2",
+            "large": "mlx-community/parakeet-tdt-0.6b-v2",
+            "large-v2": "mlx-community/parakeet-tdt-0.6b-v2",
+            "large-v3": "mlx-community/parakeet-tdt-0.6b-v2",
+        }
+
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
 
@@ -46,26 +72,8 @@ class ParakeetMLXImplementation(WhisperImplementation):
         self.model_name = model_name
         self.log.info(f"Loading Parakeet MLX model {self.model_name}")
 
-        # Map model name to the format expected by parakeet-mlx
-        model_map = {
-            # Specific model names
-            "parakeet-tdt-0.6b": "mlx-community/parakeet-tdt-0.6b-v2",
-            "parakeet-tdt-0.6b-v2": "mlx-community/parakeet-tdt-0.6b-v2",
-            "parakeet-tdt-1.1b": "mlx-community/parakeet-tdt-1.1b",
-            "parakeet-ctc-0.6b": "mlx-community/parakeet-ctc-0.6b",
-            "parakeet-ctc-1.1b": "mlx-community/parakeet-ctc-1.1b",
-            # Size-based mappings (optimized for best performance using newest model)
-            "tiny": "mlx-community/parakeet-tdt-0.6b-v2",
-            "small": "mlx-community/parakeet-tdt-0.6b-v2",
-            "base": "mlx-community/parakeet-tdt-0.6b-v2",
-            "medium": "mlx-community/parakeet-tdt-0.6b-v2",
-            "large": "mlx-community/parakeet-tdt-0.6b-v2",
-            "large-v2": "mlx-community/parakeet-tdt-0.6b-v2",
-            "large-v3": "mlx-community/parakeet-tdt-0.6b-v2",
-        }
-
-        # Get the appropriate model repo
-        self._hf_repo = model_map.get(self.model_name, self.model_name)
+        # Use base class helper to get model repo ID
+        self._hf_repo = self._map_model_name(self.model_name)
 
         # If the model name doesn't start with mlx-community/, assume it's a direct HF repo
         if not self._hf_repo.startswith("mlx-community/") and "/" not in self._hf_repo:
@@ -221,27 +229,13 @@ class ParakeetMLXImplementation(WhisperImplementation):
         }
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
-        # Use the same model_map logic as load_model()
-        model_map = {
-            # Specific model names
-            "parakeet-tdt-0.6b": "mlx-community/parakeet-tdt-0.6b-v2",
-            "parakeet-tdt-0.6b-v2": "mlx-community/parakeet-tdt-0.6b-v2",
-            "parakeet-tdt-1.1b": "mlx-community/parakeet-tdt-1.1b",
-            "parakeet-ctc-0.6b": "mlx-community/parakeet-ctc-0.6b",
-            "parakeet-ctc-1.1b": "mlx-community/parakeet-ctc-1.1b",
-            # Size-based mappings (optimized for best performance using newest model)
-            "tiny": "mlx-community/parakeet-tdt-0.6b-v2",
-            "small": "mlx-community/parakeet-tdt-0.6b-v2",
-            "base": "mlx-community/parakeet-tdt-0.6b-v2",
-            "medium": "mlx-community/parakeet-tdt-0.6b-v2",
-            "large": "mlx-community/parakeet-tdt-0.6b-v2",
-            "large-v2": "mlx-community/parakeet-tdt-0.6b-v2",
-            "large-v3": "mlx-community/parakeet-tdt-0.6b-v2",
-        }
+        """Get model information for verification/download.
 
-        # Get the appropriate model repo
-        repo_id = model_map.get(model_name, model_name)
+        Uses base class helper for model mapping to ensure consistency
+        between verification and actual model loading.
+        """
+        # Use base class helper (same as load_model) - single source of truth
+        repo_id = self._map_model_name(model_name)
 
         # If the model name doesn't start with mlx-community/, assume it's a direct HF repo
         if not repo_id.startswith("mlx-community/") and "/" not in repo_id:

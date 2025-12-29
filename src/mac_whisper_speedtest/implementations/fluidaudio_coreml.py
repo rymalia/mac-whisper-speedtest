@@ -202,14 +202,38 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
     def get_params(self) -> Dict[str, Any]:
         """Get the parameters used for this implementation."""
         return {
-            "model": f"fluidaudio-{self.model_name}" if self.model_name else "fluidaudio-asr", # parakeet-tdt-0.6b-v2-coreml
+            "model": f"fluidaudio-{self.model_name}" if self.model_name else "fluidaudio-asr",  # parakeet-tdt-0.6b-v3-coreml
             "backend": "FluidAudio Swift Bridge",
             "platform": "Apple Silicon",
         }
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
+        """Get model information for verification/download.
+
+        NOTE: FluidAudio uses a single fixed model (parakeet-tdt-0.6b-v3-coreml)
+        regardless of the requested model_name parameter. This is an architectural
+        limitation of the FluidAudio framework which doesn't support multiple model
+        sizes like standard Whisper implementations.
+
+        The parakeet-tdt-0.6b model is roughly equivalent to Whisper's small/base
+        models in terms of size (~600M parameters).
+
+        Args:
+            model_name: Requested model size (ignored by FluidAudio)
+
+        Returns:
+            ModelInfo for the fixed parakeet-tdt-0.6b-v3-coreml model
+        """
         from pathlib import Path
+
+        # Log for transparency when non-standard model sizes are requested
+        # Parakeet ~600M params is roughly equivalent to small/base
+        if model_name not in ["small", "base"]:
+            self.log.info(
+                f"FluidAudio uses parakeet-tdt-0.6b-v3-coreml for all model sizes "
+                f"(requested: {model_name}). Parakeet is roughly equivalent to "
+                f"Whisper small/base models."
+            )
 
         # FluidAudio uses its own Parakeet model
         home = Path.home()

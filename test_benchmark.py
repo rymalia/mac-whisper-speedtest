@@ -2,6 +2,7 @@
 """Test script to run benchmark with a pre-recorded audio file."""
 
 import asyncio
+import sys
 import soundfile as sf
 import structlog
 
@@ -18,7 +19,7 @@ structlog.configure(
     ]
 )
 
-async def main():
+async def main(model_name="small", num_runs=1):
     # Load test audio file
     audio_path = "tools/whisperkit-bridge/.build/checkouts/WhisperKit/Tests/WhisperKitTests/Resources/jfk.wav"
     print(f"Loading audio from: {audio_path}")
@@ -49,15 +50,19 @@ async def main():
 
     # Run benchmark
     config = BenchmarkConfig(
-        model_name="small",
+        model_name=model_name,
         implementations=all_impls,
-        num_runs=1,  # Just 1 run for testing
+        num_runs=num_runs,
         audio_data=whisper_audio,
     )
 
-    print("\nStarting benchmark...")
+    print(f"\nStarting benchmark with model '{model_name}' ({num_runs} run(s))...")
     summary = await run_benchmark(config)
     summary.print_summary()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Parse command-line arguments
+    model = sys.argv[1] if len(sys.argv) > 1 else "small"
+    runs = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+
+    asyncio.run(main(model, runs))

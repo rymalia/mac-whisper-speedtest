@@ -213,12 +213,50 @@ class ModelInfo:
    ```
 6. Add display name mapping in `benchmark.py` `print_summary()` method
 
+### Standardized Model Mapping Pattern ⭐ IMPORTANT
+
+**All implementations should use the base class helper pattern for consistency:**
+
+```python
+class YourImplementation(WhisperImplementation):
+    def _get_model_map(self) -> Dict[str, str]:
+        """Override to provide model name mappings.
+
+        This is the SINGLE SOURCE OF TRUTH for model mappings.
+        Both load_model() and get_model_info() should use this.
+        """
+        return {
+            "tiny": "your-repo/whisper-tiny-optimized",
+            "small": "your-repo/whisper-small-optimized",
+            "large": "your-repo/whisper-large-v3",
+        }
+
+    def load_model(self, model_name: str) -> None:
+        # Use base class helper - DO NOT duplicate the mapping here
+        repo_id = self._map_model_name(model_name)
+        # Load using repo_id...
+
+    def get_model_info(self, model_name: str) -> ModelInfo:
+        # Use base class helper - DO NOT duplicate the mapping here
+        repo_id = self._map_model_name(model_name)
+        return ModelInfo(repo_id=repo_id, ...)
+```
+
+**Why this pattern?**
+- ✅ Single source of truth - no duplication
+- ✅ Guaranteed consistency between load_model() and get_model_info()
+- ✅ Easier to maintain - update mapping in one place
+- ✅ Prevents bugs from divergent mappings
+
 **Example get_model_info() implementation:**
 ```python
 def get_model_info(self, model_name: str) -> ModelInfo:
+    # Use base class helper instead of inline dict
+    repo_id = self._map_model_name(model_name)
+
     return ModelInfo(
-        model_name=f"mlx-community/whisper-{model_name}-mlx-4bit",
-        repo_id=f"mlx-community/whisper-{model_name}-mlx-4bit",
+        model_name=repo_id,
+        repo_id=repo_id,
         cache_paths=[],  # HF manages cache automatically
         expected_size_mb=None,  # Not needed for HF verification
         verification_method="huggingface",

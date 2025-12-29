@@ -41,11 +41,32 @@ class FasterWhisperImplementation(WhisperImplementation):
         self.log.info("Implementation: Whisper implementation using Faster Whisper")
         self.log.info("====== ====== ====== ====== ====== ======")
 
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for Faster Whisper.
+
+        Maps standard Whisper model names to HuggingFace repo IDs.
+        Uses base class standardized pattern for consistency.
+
+        Note: For "large" model, this returns the primary model (large-v3-turbo).
+        The fallback chain is handled separately in _get_model_fallback_chain().
+        """
+        return {
+            "large-v3-turbo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+            "large-v3": "Systran/faster-whisper-large-v3",
+            "large": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",  # Primary for "large"
+            "medium": "Systran/faster-whisper-medium",
+            "small": "Systran/faster-whisper-small",
+            "base": "Systran/faster-whisper-base",
+            "tiny": "Systran/faster-whisper-tiny",
+        }
+
     def _get_model_fallback_chain(self, model_name: str) -> List[str]:
         """Get the fallback chain for a given model name.
 
         For 'large' model, returns: [large-v3-turbo, large-v3, large]
         For other models, returns: [model_name]
+
+        This is implementation-specific logic for Faster Whisper's fallback mechanism.
 
         Args:
             model_name: The originally requested model name
@@ -244,19 +265,19 @@ class FasterWhisperImplementation(WhisperImplementation):
         return params
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
+        """Get model information for verification/download.
+
+        Uses base class helper for model mapping to ensure consistency
+        between verification and actual model loading.
+        """
         from mac_whisper_speedtest.utils import get_models_dir
 
-        # faster-whisper uses standard HuggingFace model names with fallback chain
+        # Get primary model from fallback chain (for display purposes)
         fallback_chain = self._get_model_fallback_chain(model_name)
         primary_model = fallback_chain[0]
 
-        # Map to HuggingFace repo IDs
-        # Note: large-v3-turbo is hosted under mobiuslabsgmbh, not Systran
-        if primary_model == "large-v3-turbo":
-            repo_id = "mobiuslabsgmbh/faster-whisper-large-v3-turbo"
-        else:
-            repo_id = f"Systran/faster-whisper-{primary_model}"
+        # Use base class helper to map to HuggingFace repo ID (single source of truth)
+        repo_id = self._map_model_name(primary_model)
 
         return ModelInfo(
             model_name=primary_model,

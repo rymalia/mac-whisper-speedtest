@@ -32,6 +32,34 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
         self.log.info("WhisperCpp with CoreML implementation")
         self.log.info("====== ====== ====== ====== ====== ======")
 
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for whisper.cpp (GGML quantized versions).
+
+        Maps standard Whisper model names to quantized GGML model names.
+        Uses base class standardized pattern for consistency.
+        """
+        return {
+            "tiny": "tiny-q5_1",
+            "base": "base-q5_1",
+            "small": "small",
+            "medium": "medium-q5_0",
+            "large": "large-v3-turbo-q5_0",
+        }
+
+    def _get_coreml_model_map(self) -> Dict[str, str]:
+        """Model name mappings for CoreML encoder models.
+
+        Maps standard Whisper model names to CoreML encoder model names.
+        This is whisper.cpp-specific logic for CoreML acceleration.
+        """
+        return {
+            "tiny": "tiny",
+            "base": "base",
+            "small": "small",
+            "medium": "medium",
+            "large": "large-v3-turbo",
+        }
+
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
 
@@ -43,32 +71,17 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
         self._pywhispercpp = pywhispercpp
         pywhispercpp.model.logging = self.log
 
-        models_map = {
-            "tiny": "tiny-q5_1",
-            "base": "base-q5_1",
-            # "small": "small-q5_1",
-            "small": "small",
-            "medium": "medium-q5_0",
-            "large": "large-v3-turbo-q5_0",
-        }
-        self.model_name = models_map.get(model_name, model_name)
+        # Use base class helper to map to quantized GGML model name
+        self.model_name = self._map_model_name(model_name)
 
         # Check if CoreML is enabled
         self.coreml_enabled = os.environ.get("WHISPER_COREML", "0") == "1"
         if self.coreml_enabled:
             self.log.info("CoreML support is enabled for whisper.cpp")
 
-            # Map model names to their corresponding CoreML model file names
-            coreml_models_map = {
-                "tiny": "tiny",
-                "base": "base",
-                "small": "small",
-                "medium": "medium",
-                "large": "large-v3-turbo",
-            }
-
-            # Get the CoreML model name (fallback to original model_name if not in map)
-            coreml_model_name = coreml_models_map.get(model_name, model_name)
+            # Get CoreML encoder model name using helper method
+            coreml_model_map = self._get_coreml_model_map()
+            coreml_model_name = coreml_model_map.get(model_name, model_name)
 
             # Check if CoreML model files exist
             coreml_model_path = self.models_dir / f"ggml-{coreml_model_name}-encoder.mlmodelc"
@@ -123,29 +136,20 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
         }
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
+        """Get model information for verification/download.
+
+        Uses base class helpers for model mapping to ensure consistency
+        between verification and actual model loading.
+        """
         from pathlib import Path
         from mac_whisper_speedtest.utils import get_models_dir
 
-        # Map model names to their quantized GGML equivalents
-        models_map = {
-            "tiny": "tiny-q5_1",
-            "base": "base-q5_1",
-            "small": "small",
-            "medium": "medium-q5_0",
-            "large": "large-v3-turbo-q5_0",
-        }
-        ggml_model_name = models_map.get(model_name, model_name)
+        # Use base class helper for GGML model name (single source of truth)
+        ggml_model_name = self._map_model_name(model_name)
 
-        # CoreML model names (for encoder acceleration)
-        coreml_models_map = {
-            "tiny": "tiny",
-            "base": "base",
-            "small": "small",
-            "medium": "medium",
-            "large": "large-v3-turbo",
-        }
-        coreml_model_name = coreml_models_map.get(model_name, model_name)
+        # Use CoreML helper for CoreML encoder name
+        coreml_model_map = self._get_coreml_model_map()
+        coreml_model_name = coreml_model_map.get(model_name, model_name)
 
         models_dir = Path(get_models_dir())
 

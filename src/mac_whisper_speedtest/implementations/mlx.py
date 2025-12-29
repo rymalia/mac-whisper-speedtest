@@ -25,7 +25,39 @@ class MLXWhisperImplementation(WhisperImplementation):
         self.log.info("====== ====== ====== ====== ====== ======")
         self.log.info("Implementation: Whisper implementation using MLX Whisper")
         self.log.info("====== ====== ====== ====== ====== ======")
-    
+
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for MLX Whisper (quantized versions).
+
+        Maps standard Whisper model names to quantized MLX community models.
+        Uses base class standardized pattern for consistency.
+        """
+        return {
+            "tiny": "mlx-community/whisper-tiny-mlx-q4",
+            "base": "mlx-community/whisper-base-mlx",
+            "small": "mlx-community/whisper-small-mlx-4bit",
+            "medium": "mlx-community/whisper-medium-mlx-8bit",
+            "large": "mlx-community/whisper-large-v3-turbo",
+            "large-v2": "mlx-community/whisper-large-v2-mlx-4bit",
+            "large-v3": "mlx-community/whisper-large-v3-mlx-8bit",
+        }
+
+    def _get_fallback_model(self, model_name: str) -> str:
+        """Get non-quantized fallback model for the given model name.
+
+        This is MLX-specific logic for handling quantization failures.
+        """
+        fallback_map = {
+            "tiny": "mlx-community/whisper-tiny-mlx",
+            "base": "mlx-community/whisper-base-mlx",
+            "small": "mlx-community/whisper-small-mlx",
+            "medium": "mlx-community/whisper-medium-mlx",
+            "large": "mlx-community/whisper-large-v3-turbo",
+            "large-v2": "mlx-community/whisper-large-v2-mlx",
+            "large-v3": "mlx-community/whisper-large-v3-mlx",
+        }
+        return fallback_map.get(model_name, model_name)
+
     def load_model(self, model_name: str) -> None:
         """Load the model with the given name.
 
@@ -48,31 +80,8 @@ class MLXWhisperImplementation(WhisperImplementation):
         self.model_name = model_name
         self.log.info(f"Loading MLX Whisper model {self.model_name}")
 
-        # Map model name to the format expected by mlx-whisper
-        # Prefer quantized models for better performance on Apple Silicon
-        model_map = {
-            "tiny": "mlx-community/whisper-tiny-mlx-q4",
-            "base": "mlx-community/whisper-base-mlx",  # Use base for now, fallback available
-            "small": "mlx-community/whisper-small-mlx-4bit",
-            "medium": "mlx-community/whisper-medium-mlx-8bit",
-            "large": "mlx-community/whisper-large-v3-turbo",
-            "large-v2": "mlx-community/whisper-large-v2-mlx-4bit",
-            "large-v3": "mlx-community/whisper-large-v3-mlx-8bit",
-        }
-
-        # Fallback to non-quantized models if quantized versions fail
-        fallback_model_map = {
-            "tiny": "mlx-community/whisper-tiny-mlx",
-            "base": "mlx-community/whisper-base-mlx",
-            "small": "mlx-community/whisper-small-mlx",
-            "medium": "mlx-community/whisper-medium-mlx",
-            "large": "mlx-community/whisper-large-v3-turbo",
-            "large-v2": "mlx-community/whisper-large-v2-mlx",
-            "large-v3": "mlx-community/whisper-large-v3-mlx",
-        }
-
-        # Get the appropriate model path (prefer quantized)
-        self.hf_repo = model_map.get(self.model_name, self.model_name)
+        # Use base class helper to get model repo ID (quantized versions preferred)
+        self.hf_repo = self._map_model_name(self.model_name)
         # Check if this is actually a quantized model by looking for quantization indicators
         self._is_quantized = any(indicator in self.hf_repo for indicator in ["4bit", "8bit", "2bit", "-q4", "-q8"])
 
@@ -96,7 +105,7 @@ class MLXWhisperImplementation(WhisperImplementation):
         except Exception as e:
             # Fallback to non-quantized model
             self.log.warning(f"Failed to load quantized model {self.hf_repo}: {e}")
-            fallback_repo = fallback_model_map.get(self.model_name, self.model_name)
+            fallback_repo = self._get_fallback_model(self.model_name)
             self.log.info(f"Falling back to non-quantized model: {fallback_repo}")
 
             try:
@@ -201,22 +210,15 @@ class MLXWhisperImplementation(WhisperImplementation):
         return params
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
-        from pathlib import Path
+        """Get model information for verification/download.
+
+        Uses base class helper for model mapping to ensure consistency
+        between verification and actual model loading.
+        """
         from mac_whisper_speedtest.utils import get_models_dir
 
-        # Model mapping (same as in load_model)
-        model_map = {
-            "tiny": "mlx-community/whisper-tiny-mlx-q4",
-            "base": "mlx-community/whisper-base-mlx",
-            "small": "mlx-community/whisper-small-mlx-4bit",
-            "medium": "mlx-community/whisper-medium-mlx-8bit",
-            "large": "mlx-community/whisper-large-v3-turbo",
-            "large-v2": "mlx-community/whisper-large-v2-mlx-4bit",
-            "large-v3": "mlx-community/whisper-large-v3-mlx-8bit",
-        }
-
-        repo_id = model_map.get(model_name, model_name)
+        # Use base class helper (same as load_model) - single source of truth
+        repo_id = self._map_model_name(model_name)
 
         return ModelInfo(
             model_name=repo_id,

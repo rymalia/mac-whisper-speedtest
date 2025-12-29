@@ -147,10 +147,13 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
             model_kwargs=model_kwargs,
         )
 
-    def _map_model_name(self, model_name: str) -> str:
-        """Map the model name to one supported by Insanely Fast Whisper."""
-        # Insanely Fast Whisper uses HuggingFace model names
-        model_map = {
+    def _get_model_map(self) -> Dict[str, str]:
+        """Model name mappings for Insanely Fast Whisper.
+
+        Maps standard Whisper model names to OpenAI HuggingFace repo IDs.
+        Uses base class standardized pattern for consistency.
+        """
+        return {
             "tiny": "openai/whisper-tiny",
             "base": "openai/whisper-base",
             "small": "openai/whisper-small",
@@ -159,7 +162,6 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
             "large-v2": "openai/whisper-large-v2",
             "large-v3": "openai/whisper-large-v3",
         }
-        return model_map.get(model_name, f"openai/whisper-{model_name}")
 
     async def transcribe(self, audio: np.ndarray) -> TranscriptionResult:
         """Transcribe the given audio data.

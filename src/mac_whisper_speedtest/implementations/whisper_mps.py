@@ -134,32 +134,19 @@ class WhisperMPSImplementation(WhisperImplementation):
         }
 
     def get_model_info(self, model_name: str) -> ModelInfo:
-        """Get model information for verification/download."""
+        """Get model information for verification/download.
+
+        Consistent with load_model() - uses the model name directly as whisper-mps
+        handles internal version mapping (e.g., "large" may map to "large-v3.pt").
+        """
         from mac_whisper_speedtest.utils import get_models_dir
-        from pathlib import Path
 
         # whisper-mps downloads to the project's models directory
         models_dir = get_models_dir()
 
-        # whisper-mps has internal model versioning similar to other implementations
-        # "large" downloads as "large-v3.pt", others download as "{model}.pt"
-        # Check which file actually exists and report that one
-        if model_name == "large":
-            # For large, check both large-v3.pt and large.pt (in order of preference)
-            large_v3_path = models_dir / "large-v3.pt"
-            large_path = models_dir / "large.pt"
-
-            # Use whichever exists, prefer large-v3.pt
-            if large_v3_path.exists():
-                model_file = large_v3_path
-            elif large_path.exists():
-                model_file = large_path
-            else:
-                # Neither exists, default to large-v3.pt (what will be downloaded)
-                model_file = large_v3_path
-        else:
-            # For other models, just use the model name
-            model_file = models_dir / f"{model_name}.pt"
+        # Use model name directly - whisper-mps handles versioning internally
+        # This matches what load_model() does (passes model_name directly to library)
+        model_file = models_dir / f"{model_name}.pt"
 
         # Expected sizes (approximate, in MB)
         size_map = {
@@ -173,7 +160,7 @@ class WhisperMPSImplementation(WhisperImplementation):
         return ModelInfo(
             model_name=model_name,
             repo_id=None,  # whisper-mps downloads from openaipublic.azureedge.net, not HuggingFace
-            cache_paths=[model_file],  # Single file path (the one that exists or will be downloaded)
+            cache_paths=[model_file],
             expected_size_mb=size_map.get(model_name, 100),
             verification_method="size",  # Local file verification
             download_trigger="native"  # Use implementation's native download via load_model()
