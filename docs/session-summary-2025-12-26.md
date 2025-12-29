@@ -9,6 +9,7 @@ This session focused on fixing critical issues with the `check-models` command t
 
 ### 1. **Cache Directory Verification Strategy**
 **Decision:** Split verification into two columns:
+
 - **HF Hub Cache**: Always check default HuggingFace cache (`~/.cache/huggingface/hub/`)
 - **Local Cache**: Check where the implementation actually looks (custom `models/` directory for MLX/FasterWhisper, or specific paths for others)
 

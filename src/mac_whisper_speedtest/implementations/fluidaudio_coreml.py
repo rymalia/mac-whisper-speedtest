@@ -202,7 +202,7 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
     def get_params(self) -> Dict[str, Any]:
         """Get the parameters used for this implementation."""
         return {
-            "model": f"fluidaudio-{self.model_name}" if self.model_name else "fluidaudio-asr",
+            "model": f"fluidaudio-{self.model_name}" if self.model_name else "fluidaudio-asr", # parakeet-tdt-0.6b-v2-coreml
             "backend": "FluidAudio Swift Bridge",
             "platform": "Apple Silicon",
         }
