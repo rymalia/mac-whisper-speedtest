@@ -163,7 +163,8 @@ class WhisperMPSImplementation(WhisperImplementation):
             cache_paths=[model_file],
             expected_size_mb=size_map.get(model_name, 100),
             verification_method="size",  # Local file verification
-            download_trigger="native"  # Use implementation's native download via load_model()
+            download_trigger="native",  # Use implementation's native download via load_model()
+            timeout_seconds=30 if "large" in model_name else 15
         )
 
     def cleanup(self) -> None:

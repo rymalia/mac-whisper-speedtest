@@ -223,6 +223,11 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
 
         Returns:
             ModelInfo for the fixed parakeet-tdt-0.6b-v3-coreml model
+
+        TODO: Timeout-based verification not yet implemented for bridge implementations.
+              Bridge implementations currently use size-based verification only.
+              Future enhancement: Add timeout_seconds field and integrate with
+              check_models.py timeout verification (see HF implementations for pattern).
         """
         from pathlib import Path
 

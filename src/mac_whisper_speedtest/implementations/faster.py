@@ -286,7 +286,8 @@ class FasterWhisperImplementation(WhisperImplementation):
             expected_size_mb=None,  # Will be determined by HF verification
             verification_method="huggingface",
             download_trigger="auto",
-            hf_cache_dir=str(get_models_dir())  # faster-whisper uses custom download_root
+            hf_cache_dir=str(get_models_dir()),  # faster-whisper uses custom download_root
+            timeout_seconds=30 if "large" in model_name else 15
         )
 
     def cleanup(self) -> None:

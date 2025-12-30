@@ -292,6 +292,11 @@ class WhisperKitImplementation(WhisperImplementation):
 
         Uses base class helper for model mapping to ensure consistency
         between verification and actual model loading.
+
+        TODO: Timeout-based verification not yet implemented for bridge implementations.
+              Bridge implementations currently use size-based verification only.
+              Future enhancement: Add timeout_seconds field and integrate with
+              check_models.py timeout verification (see HF implementations for pattern).
         """
         from pathlib import Path
 

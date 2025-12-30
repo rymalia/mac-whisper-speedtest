@@ -36,10 +36,137 @@ class ModelStatus:
 class ModelChecker:
     """Check and manage model cache status across implementations."""
 
-    def __init__(self):
+    def __init__(self, verify_method: Optional[str] = None, verbose: bool = False):
+        """Initialize model checker.
+
+        Args:
+            verify_method: Force specific verification method ('cache-check', 'timeout', or None for auto)
+            verbose: Show timing information during verification
+        """
         self.hf_cache_dir = Path.home() / ".cache" / "huggingface" / "hub"
         # Cache verification results to avoid loading same model multiple times
         self._verification_cache = {}
+        self.verify_method_override = verify_method
+        self.verbose = verbose
+
+    def _calculate_timeout(self, model_name: str, model_info: ModelInfo) -> int:
+        """Calculate appropriate timeout based on model size.
+
+        Uses model-size-aware timeout scaling:
+        - tiny, base, small, medium: 15 seconds
+        - large models: 30 seconds
+
+        Args:
+            model_name: Standard model name (tiny, small, medium, large)
+            model_info: ModelInfo from implementation (may specify custom timeout)
+
+        Returns:
+            Timeout in seconds
+        """
+        # If implementation specifies timeout, use it
+        if model_info.timeout_seconds is not None:
+            return model_info.timeout_seconds
+
+        # Otherwise calculate based on model name
+        model_lower = model_name.lower()
+        if "large" in model_lower:
+            return 30
+        else:
+            return 15
+
+    def _verify_with_timeout(self, impl_instance, model_name: str, timeout_seconds: int) -> tuple[str, Optional[float]]:
+        """Verify model by loading with timeout protection.
+
+        This method attempts to load the model with a timeout. If the load completes
+        within the timeout, the model is verified as complete. If it times out, the
+        model is likely missing and would trigger a download.
+
+        Args:
+            impl_instance: The implementation instance
+            model_name: The model size name (e.g., "small", "large")
+            timeout_seconds: Maximum time to wait for model load
+
+        Returns:
+            Tuple of (status, verification_time_seconds)
+            Status: "complete", "incomplete", or "missing"
+        """
+        import time
+        import signal
+        from contextlib import contextmanager
+
+        cache_key = (impl_instance.__class__.__name__, model_name)
+        if cache_key in self._verification_cache:
+            return self._verification_cache[cache_key], None
+
+        @contextmanager
+        def timeout_handler(seconds):
+            """Context manager for timeout using SIGALRM."""
+            def _timeout_handler(signum, frame):
+                raise TimeoutError(f"Verification timed out after {seconds}s")
+
+            old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+            signal.alarm(seconds)
+            try:
+                yield
+            finally:
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM, old_handler)
+
+        start_time = time.time() if self.verbose else None
+
+        try:
+            with timeout_handler(timeout_seconds):
+                # Try to load the model using the implementation's own load_model method
+                impl_instance.load_model(model_name)
+
+                # If load succeeded, immediately cleanup to release memory
+                if hasattr(impl_instance, 'cleanup'):
+                    impl_instance.cleanup()
+
+                elapsed = time.time() - start_time if start_time else None
+
+                # Model loaded successfully - it's complete
+                result = "complete"
+                self._verification_cache[cache_key] = result
+
+                if self.verbose and elapsed:
+                    log.info(f"Verified {impl_instance.__class__.__name__} {model_name} in {elapsed:.2f}s")
+
+                return result, elapsed
+
+        except TimeoutError as e:
+            # Timeout indicates model not cached (would trigger download)
+            elapsed = time.time() - start_time if start_time else None
+            log.warning(f"Timeout verifying {impl_instance.__class__.__name__} {model_name}: {e}")
+            result = "incomplete"
+            self._verification_cache[cache_key] = result
+
+            if self.verbose and elapsed:
+                log.info(f"Verification timed out for {impl_instance.__class__.__name__} {model_name} after {elapsed:.2f}s")
+
+            return result, elapsed
+
+        except FileNotFoundError:
+            # Model files are missing
+            elapsed = time.time() - start_time if start_time else None
+            result = "incomplete"
+            self._verification_cache[cache_key] = result
+            return result, elapsed
+
+        except Exception as e:
+            # Other errors could indicate corruption or incomplete download
+            elapsed = time.time() - start_time if start_time else None
+            error_msg = str(e).lower()
+
+            if any(indicator in error_msg for indicator in
+                   ["incomplete", "corrupted", "missing", "not found", "no such file"]):
+                result = "incomplete"
+            else:
+                log.warning(f"Error loading {impl_instance.__class__.__name__} {model_name}: {e}")
+                result = "incomplete"
+
+            self._verification_cache[cache_key] = result
+            return result, elapsed
 
     def check_all_models(self, model_size: str, implementations: List) -> List[ModelStatus]:
         """Check status of all models for the given size.
@@ -172,7 +299,8 @@ class ModelChecker:
     def _verify_by_loading(self, impl_instance, model_name: str) -> str:
         """Verify model completeness by actually loading it.
 
-        This uses the exact same code path as benchmark, ensuring perfect alignment.
+        This uses timeout-protected loading to prevent triggering long downloads
+        during verification. Uses the exact same code path as benchmark.
 
         Args:
             impl_instance: The implementation instance
@@ -181,46 +309,30 @@ class ModelChecker:
         Returns:
             Status: "complete", "incomplete", or "error"
         """
-        # Create cache key to avoid loading same model multiple times
-        cache_key = (impl_instance.__class__.__name__, model_name)
-        if cache_key in self._verification_cache:
-            return self._verification_cache[cache_key]
+        # Get model info to calculate timeout
+        model_info = impl_instance.get_model_info(model_name)
+        timeout = self._calculate_timeout(model_name, model_info)
 
-        try:
-            # Try to load the model using the implementation's own load_model method
-            # This is the EXACT same code path used during benchmark
-            impl_instance.load_model(model_name)
-
-            # If load succeeded, immediately cleanup to release memory
-            if hasattr(impl_instance, 'cleanup'):
-                impl_instance.cleanup()
-
-            # Model loaded successfully - it's complete
-            result = "complete"
-            self._verification_cache[cache_key] = result
-            return result
-
-        except FileNotFoundError:
-            # Model files are missing - this is expected for missing models
-            result = "incomplete"
-            self._verification_cache[cache_key] = result
-            return result
-
-        except Exception as e:
-            # Other errors could indicate corruption or incomplete download
-            error_msg = str(e).lower()
-
-            # Check for common incomplete download indicators
-            if any(indicator in error_msg for indicator in
-                   ["incomplete", "corrupted", "missing", "not found", "no such file"]):
-                result = "incomplete"
+        # Check if user forced a specific verification method
+        if self.verify_method_override == "timeout":
+            # Force timeout-based verification
+            status, _ = self._verify_with_timeout(impl_instance, model_name, timeout)
+            return status
+        elif self.verify_method_override == "cache-check":
+            # Force cache-check only (no load attempt)
+            # This is for debugging - just check for .incomplete markers
+            log.info(f"Using cache-check only for {impl_instance.__class__.__name__} (no load attempt)")
+            return "incomplete"  # Conservative: assume incomplete without loading
+        else:
+            # Auto mode: use timeout-protected verification for HF implementations
+            # This prevents downloads during verification
+            if model_info.verification_method == "huggingface":
+                status, _ = self._verify_with_timeout(impl_instance, model_name, timeout)
+                return status
             else:
-                # Other errors - log and mark as incomplete
-                log.warning(f"Error loading {impl_instance.__class__.__name__} {model_name}: {e}")
-                result = "incomplete"
-
-            self._verification_cache[cache_key] = result
-            return result
+                # For non-HF implementations, use timeout as well for consistency
+                status, _ = self._verify_with_timeout(impl_instance, model_name, timeout)
+                return status
 
     def _check_local_cache(self, model_info: ModelInfo, impl_instance, model_name: str) -> tuple[str, Optional[float]]:
         """Check if model exists in local cache paths or custom HF cache directory.

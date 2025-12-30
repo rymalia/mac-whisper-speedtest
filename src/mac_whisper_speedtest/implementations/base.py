@@ -18,6 +18,7 @@ class ModelInfo:
     verification_method: str = "huggingface"  # "huggingface", "size", or "structure"
     download_trigger: str = "auto"  # "auto" (HF download), "bridge" (needs Swift bridge), or "manual"
     hf_cache_dir: Optional[str] = None  # Specific HF cache directory to check (None = default HF cache)
+    timeout_seconds: Optional[int] = None  # Verification timeout (None = auto-calculate based on model size)
 
 
 @dataclass

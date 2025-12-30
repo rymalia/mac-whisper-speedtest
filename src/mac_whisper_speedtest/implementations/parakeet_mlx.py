@@ -245,9 +245,10 @@ class ParakeetMLXImplementation(WhisperImplementation):
             model_name=repo_id,
             repo_id=repo_id,
             cache_paths=[],
-            expected_size_mb=None,
+            expected_size_mb=None,  # Will be determined by HF verification
             verification_method="huggingface",
-            download_trigger="auto"
+            download_trigger="auto",
+            timeout_seconds=30 if "large" in model_name else 15
         )
 
     def cleanup(self) -> None:

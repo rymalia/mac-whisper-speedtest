@@ -227,7 +227,8 @@ class MLXWhisperImplementation(WhisperImplementation):
             expected_size_mb=None,  # Will be determined by HF verification
             verification_method="huggingface",
             download_trigger="auto",
-            hf_cache_dir=str(get_models_dir())  # MLX uses custom cache directory
+            hf_cache_dir=str(get_models_dir()),  # MLX uses custom cache directory
+            timeout_seconds=30 if "large" in model_name else 15
         )
 
     def cleanup(self) -> None:

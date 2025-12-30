@@ -192,7 +192,8 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
             cache_paths=[],
             expected_size_mb=None,
             verification_method="huggingface",
-            download_trigger="auto"
+            download_trigger="auto",
+            timeout_seconds=30 if "large" in model_name else 15
         )
 
     def cleanup(self) -> None:

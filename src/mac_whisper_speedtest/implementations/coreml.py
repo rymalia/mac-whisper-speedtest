@@ -174,7 +174,8 @@ class WhisperCppCoreMLImplementation(WhisperImplementation):
             cache_paths=cache_paths,
             expected_size_mb=size_map.get(model_name, 100),
             verification_method="size",
-            download_trigger="manual"
+            download_trigger="manual",
+            timeout_seconds=30 if "large" in model_name else 15
         )
 
     def cleanup(self) -> None:

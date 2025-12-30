@@ -106,6 +106,10 @@ def check_models(
     ),
     download: bool = typer.Option(False, help="Download missing models automatically"),
     selective: bool = typer.Option(False, help="Select specific implementations to download"),
+    verify_method: Optional[str] = typer.Option(
+        None, help="Force verification method: 'timeout' or 'cache-check' (for debugging)"
+    ),
+    verbose: bool = typer.Option(False, help="Show timing information during verification"),
 ):
     """Check model cache status and optionally download missing models."""
     # Configure logging
@@ -130,8 +134,8 @@ def check_models(
     else:
         impls_to_check = all_impls
 
-    # Create model checker and check status
-    checker = ModelChecker()
+    # Create model checker with optional verification method and verbose mode
+    checker = ModelChecker(verify_method=verify_method, verbose=verbose)
     statuses = checker.check_all_models(model, impls_to_check)
 
     # Print status table
