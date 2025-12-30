@@ -16,7 +16,7 @@ class WhisperMPSImplementation(WhisperImplementation):
     def __init__(self):
         self.log = structlog.get_logger(__name__)
         self.model_name = None
-        self.language = None
+        self.language = "en"  # Default to English; can be set to None for auto-detection
         self._model = None
 
         # Check if we're on macOS (MPS only works on Apple Silicon)
