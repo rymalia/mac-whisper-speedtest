@@ -58,7 +58,8 @@ class LightningWhisperMLXImplementation(WhisperImplementation):
         """
         self.log.info(f"Loading LightningWhisperMLX model {model_name}")
 
-        # Import Lightning Whisper MLX
+        # Import Lightning Whisper MLX 
+        # (.venv/lib/python3.12/site-packages/lightning_whisper_mlx/lightning.py)
         try:
             from lightning_whisper_mlx import LightningWhisperMLX
         except ImportError:

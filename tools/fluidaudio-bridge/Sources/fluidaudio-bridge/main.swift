@@ -42,10 +42,10 @@ struct FluidAudioBridge: AsyncParsableCommand {
             let asrManager = AsrManager(config: asrConfig)
             print("ASR manager created", to: &standardError)
 
-            // Load models - should use cached parakeet-tdt-0.6b-v2-coreml
+            // Load models - should use cached parakeet-tdt-0.6b-v3-coreml
             print("Starting model load...", to: &standardError)
             let modelLoadStart = CFAbsoluteTimeGetCurrent()
-            let models = try await AsrModels.downloadAndLoad()
+            let models = try await AsrModels.downloadAndLoad(version: .v2) // No version param = .v3
             let modelLoadTime = CFAbsoluteTimeGetCurrent() - modelLoadStart
             print("Model load completed in \(modelLoadTime)s", to: &standardError)
 

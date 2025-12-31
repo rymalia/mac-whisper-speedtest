@@ -183,6 +183,8 @@ class ModelInfo:
     expected_size_mb: Optional[int]  # For size-based verification
     verification_method: str     # "huggingface", "size", or "structure"
     download_trigger: str        # "auto", "bridge", "native", or "manual"
+    hf_cache_dir: Optional[str]  # Custom HF cache directory (None = default ~/.cache/huggingface/hub)
+    timeout_seconds: Optional[int]  # Verification timeout (None = auto-calculate based on model size)
 ```
 
 **Key features:**
@@ -190,6 +192,10 @@ class ModelInfo:
 - Interactive menus for selective downloads
 - Disk space checks before downloading
 - Parallel-ready architecture (currently sequential for stability)
+
+**Note on cache locations:** Some implementations use non-standard cache paths:
+- `lightning-whisper-mlx` downloads to `./mlx_models/{model}/` relative to the current working directory (not HF cache)
+- See `docs/model_details_*.md` files for implementation-specific cache behavior
 
 ## Adding New Implementations
 
@@ -248,6 +254,8 @@ class YourImplementation(WhisperImplementation):
 - ✅ Easier to maintain - update mapping in one place
 - ✅ Prevents bugs from divergent mappings
 
+**⚠️ Known Issue:** Not all implementations follow this pattern yet. For example, `LightningWhisperMLXImplementation` has `load_model()` that passes simple model names to the library (which has its own internal mapping), while `get_model_info()` uses `_get_model_map()`. This causes `check-models` to look for different repos than what `load_model()` actually downloads. See `docs/model_details_LightningWhisperMLXImplementation.md` for details.
+
 **Example get_model_info() implementation:**
 ```python
 def get_model_info(self, model_name: str) -> ModelInfo:
@@ -276,7 +284,7 @@ Key optimizations per implementation (documented in `docs/APPLE_SILICON_OPTIMIZA
 
 - **faster-whisper**: Dynamic CPU thread detection via `system_profiler`, targets performance + efficiency cores
 - **insanely-fast-whisper**: Adaptive batch sizing for MPS, SDPA attention (16% improvement)
-- **lightning-whisper-mlx**: 4-bit quantization enabled, batch size 12 optimized for unified memory
+- **lightning-whisper-mlx**: Batch size 12 optimized for unified memory (quantization disabled by default, uses base models)
 - **WhisperKit**: Native CoreML + Apple Neural Engine
 - **FluidAudio**: Real-time streaming ASR (~110x RTF on M4 Pro)
 
