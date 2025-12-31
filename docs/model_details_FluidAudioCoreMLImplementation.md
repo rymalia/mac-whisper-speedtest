@@ -409,3 +409,65 @@ Python (fluidaudio_coreml.py)
 | **Streaming Support** | Yes (TDT architecture designed for streaming) |
 | **Warmup Required** | Yes (CoreML model compilation on first load) |
 | **Internal Timing** | Yes (excludes subprocess/bridge overhead) |
+
+---
+
+## Known Issues
+
+### Download Reliability Issue
+
+**Important**: This document traces the Swift code flow, which shows the *intended* behavior. Empirical testing reveals that the actual download behavior can differ in practice.
+
+#### The Problem
+
+The Swift `DownloadUtils.swift` code is designed to download models directly to Application Support via URLSession. However, in practice, the download mechanism can fail or hang indefinitely, leaving the bridge stuck at "Starting model load..." even when network connectivity is fine.
+
+#### Observed Behavior
+
+When Application Support cache is empty:
+1. The bridge starts and reaches "Starting model load..."
+2. The Swift download mechanism attempts to fetch from HuggingFace
+3. The download may hang indefinitely (observed: >30 seconds with no progress)
+4. Meanwhile, models may exist in the Python HuggingFace cache (`~/.cache/huggingface/hub/`)
+
+#### Root Cause
+
+The Swift `DownloadUtils` and Python `huggingface_hub` use different cache locations:
+
+| Component | Cache Location |
+|-----------|---------------|
+| Swift DownloadUtils | `~/Library/Application Support/FluidAudio/Models/` |
+| Python huggingface_hub | `~/.cache/huggingface/hub/models--FluidInference--*` |
+
+If models were previously downloaded via Python (e.g., during development, testing, or via `check-models`), they exist in the HF cache but the Swift bridge cannot find them.
+
+#### Workaround
+
+Use the `fix_models.sh` script to copy models from HF cache to Application Support:
+
+```bash
+./tools/fluidaudio-bridge/fix_models.sh
+```
+
+This script:
+1. Locates models in `~/.cache/huggingface/hub/models--FluidInference--parakeet-tdt-0.6b-v3-coreml/`
+2. Copies all required files to `~/Library/Application Support/FluidAudio/Models/`
+3. Verifies completeness (Encoder, Decoder, Preprocessor, JointDecision, vocab, config)
+
+#### Verification
+
+After running `fix_models.sh`, verify the bridge works:
+
+```bash
+./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge \
+  tools/whisperkit-bridge/.build/checkouts/WhisperKit/Tests/WhisperKitTests/Resources/jfk.wav \
+  --format json
+```
+
+Expected: Completes in <1 second with transcription output (after initial ~15s model compilation).
+
+#### Documentation Note
+
+This issue illustrates the difference between **code tracing** (documenting intended behavior from source code) and **empirical testing** (documenting actual observed behavior). The main body of this document traces the Swift code's intended flow. This section documents the practical reality observed through testing.
+
+See also: `docs/MODEL_CACHING.md` for additional troubleshooting details.
