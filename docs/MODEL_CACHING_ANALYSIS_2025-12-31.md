@@ -31,7 +31,7 @@ MODEL_CACHING.md claims these implementations use default HF cache (`~/.cache/hu
 |---------------|----------------------|-----------------|--------|
 | **MLXWhisper** | Default HF cache | `{project_root}/models/` (custom) | WRONG |
 | **FasterWhisper** | Default HF cache | `{project_root}/models/` (custom) | WRONG |
-| **InsanelyFastWhisper** | Default HF cache | `~/.cache/huggingface/hub/` | Correct |
+| **InsanelyFastWhisper** | Default HF cache | `~/.cache/huggingface/hub/` | Correct ✓ (empirically verified 2025-12-31) |
 | **LightningWhisperMLX** | Default HF cache | `./mlx_models/{model}/` + HF cache | MISLEADING |
 | **ParakeetMLX** | Default HF cache | `{project_root}/models/hub/` (via HF_HOME) | WRONG |
 
@@ -234,13 +234,32 @@ For use in the Quick Reference table:
 |---------------|------------------------|-------|
 | FasterWhisperImplementation | `{project}/models/models--Systran--faster-whisper-*` | Custom HF cache via download_root |
 | MLXWhisperImplementation | `{project}/models/models--mlx-community--whisper-*` | Custom HF cache via HF_HOME |
-| InsanelyFastWhisperImplementation | `~/.cache/huggingface/hub/models--openai--whisper-*` | Default HF cache |
+| InsanelyFastWhisperImplementation | `~/.cache/huggingface/hub/models--openai--whisper-*` | Default HF cache; uses PyTorch MPS (not MLX) ✓ verified |
 | LightningWhisperMLXImplementation | `./mlx_models/{model}/` | Project-relative, NOT HF cache |
 | ParakeetMLXImplementation | `{project}/models/hub/models--nvidia--parakeet-*` | Custom HF cache via HF_HOME |
 | WhisperMPSImplementation | `{project}/models/*.pt` | Direct download from Azure CDN; uses MLX not MPS |
 | WhisperCppCoreMLImplementation | `{project}/models/ggml-*.bin` | Direct HTTP download |
 | WhisperKitImplementation | `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/` | Swift HubApi default |
 | FluidAudioCoreMLImplementation | `~/Library/Application Support/FluidAudio/Models/` | Swift framework default |
+
+---
+
+## InsanelyFastWhisper Empirical Verification (2025-12-31)
+
+Additional verification session confirmed:
+
+1. **MPS Usage Confirmed**: Unlike whisper-mps (which uses MLX despite its name), InsanelyFastWhisper genuinely uses PyTorch's MPS backend (Metal Performance Shaders). Verified by checking `pipe.model.parameters()` device location = `mps:0`.
+
+2. **Cache Location Confirmed**: Models stored in default HuggingFace cache at `~/.cache/huggingface/hub/models--openai--whisper-*`
+
+3. **Model Mappings Confirmed**: No mismatch between `get_model_info()` and `load_model()`:
+   - small → openai/whisper-small
+   - medium → openai/whisper-medium
+   - large → openai/whisper-large-v3-turbo
+
+4. **Quantization Issue Fixed**: The `get_params()` method was reporting `quantization=4bit` even though bitsandbytes is not supported on macOS. Code has been updated to report actual status.
+
+See `docs/model_details_InsanelyFastWhisperImplementation.md` for full empirical verification details.
 
 ---
 

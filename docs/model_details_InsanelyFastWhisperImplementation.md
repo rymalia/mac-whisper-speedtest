@@ -2,6 +2,21 @@
 
 This document traces the execution flow, download URLs, and cache locations for the `InsanelyFastWhisperImplementation`.
 
+**Last Empirically Verified**: 2025-12-31 by Claude Opus 4.5
+
+---
+
+## Key Facts (Empirically Verified)
+
+| Aspect | Value | Verification |
+|--------|-------|--------------|
+| **GPU Backend** | PyTorch MPS (Metal Performance Shaders) | ✓ Verified via `torch.backends.mps` |
+| **Cache Location** | `~/.cache/huggingface/hub/` (default HF) | ✓ Verified via filesystem inspection |
+| **4-bit Quantization** | NOT supported on macOS | ✓ Verified (bitsandbytes unavailable) |
+| **Attention** | SDPA (Scaled Dot Product Attention) | ✓ Verified via log output |
+
+---
+
 ## Benchmark Execution Flow
 
 This section traces the execution flow for:
@@ -192,14 +207,46 @@ The `InsanelyFastWhisperImplementation` uses this model mapping in `_get_model_m
 | `low_cpu_mem_usage` | True | Optimize for unified memory architecture |
 | `device` | `"mps"` | Apple Metal Performance Shaders GPU backend |
 
-### Quantization Note
+### Understanding `device="mps"` (For Novice Maintainers)
 
-The implementation attempts 4-bit quantization via BitsAndBytesConfig, but this is NOT supported on macOS:
+**`device="mps"` is NOT just a label** - it is an actual instruction that moves computation to the GPU.
+
+When you pass `device="mps"` to the transformers pipeline:
+
+1. **Model weights are physically moved** from CPU RAM to Apple GPU memory
+2. **All tensor operations run on the Metal GPU**, not the CPU
+3. On Apple Silicon, this uses unified memory (shared between CPU and GPU)
+
+**Empirical verification (2025-12-31):**
 ```python
-# Note: bitsandbytes is not supported on macOS, so 4-bit quantization will be skipped on Apple Silicon
+>>> pipe = pipeline("automatic-speech-recognition", model="openai/whisper-tiny", device="mps")
+>>> first_param = next(pipe.model.parameters())
+>>> print(first_param.device)
+mps:0  # ← Model weights are on GPU, not CPU
 ```
 
-The `quantization="4bit"` parameter is set but effectively ignored on Apple Silicon systems.
+**Contrast with whisper-mps library:**
+
+| Implementation | Claims MPS? | Actually Uses |
+|----------------|-------------|---------------|
+| InsanelyFastWhisper | Yes | PyTorch MPS (Metal Performance Shaders) ✓ |
+| whisper-mps | Yes (in name) | MLX framework (misleading name) |
+
+This implementation genuinely uses Metal Performance Shaders via PyTorch's MPS backend.
+
+### Quantization Note (Empirically Verified 2025-12-31)
+
+The implementation attempts 4-bit quantization via BitsAndBytesConfig, but this is **NOT supported on macOS**.
+
+**Every benchmark run produces this warning:**
+```
+Failed to configure 4-bit quantization: No package metadata was found for bitsandbytes.
+Note: bitsandbytes is not supported on macOS/Apple Silicon.
+```
+
+**Important**: The `get_params()` method reports `quantization=4bit` in benchmark output, but this is misleading - **quantization is NOT actually applied**. The model runs in float16 without quantization.
+
+This has been fixed in the implementation to report the actual quantization status rather than the requested value.
 
 ---
 
@@ -369,3 +416,52 @@ The key differences in our implementation:
 2. Adds Apple Silicon-specific optimizations (`use_cache`, `low_cpu_mem_usage`)
 3. Adaptive batch sizing based on system memory
 4. Reduced chunk length (20s vs 30s) for better memory efficiency on MPS
+
+---
+
+## Empirical Verification (2025-12-31)
+
+### Tests Performed
+
+| # | Command | Result |
+|---|---------|--------|
+| 1 | `check-models --model small` | ✓ complete (3.6 GB in HF cache) |
+| 2 | `check-models --model medium` | ⚠ incomplete (.incomplete markers found) |
+| 3 | `check-models --model large` | ✓ complete (1.5 GB in HF cache) |
+| 4 | `test_benchmark.py small 1` | ✓ Success (1.50s) |
+| 5 | `test_benchmark.py medium 1` | ⏳ Interrupted (model downloading) |
+| 6 | `test_benchmark.py large 1` | ✓ Success (3.07s) |
+
+### Cache Location Verification
+
+```
+~/.cache/huggingface/hub/
+├── models--openai--whisper-small/      (3.6 GB) ✓ complete
+├── models--openai--whisper-medium/     (8.3 MB) ⚠ incomplete
+├── models--openai--whisper-large-v3-turbo/ (1.5 GB) ✓ complete
+└── models--openai--whisper-tiny/       ✓ exists
+```
+
+### Model Mapping Verification
+
+| Model Name | Expected Repo | Actual (from logs) | Match |
+|------------|---------------|-------------------|-------|
+| small | openai/whisper-small | openai/whisper-small | ✓ |
+| medium | openai/whisper-medium | openai/whisper-medium | ✓ |
+| large | openai/whisper-large-v3-turbo | openai/whisper-large-v3-turbo | ✓ |
+
+### MPS Backend Verification
+
+```python
+>>> import torch
+>>> torch.backends.mps.is_available()
+True
+>>> torch.backends.mps.is_built()
+True
+>>> from transformers.pipelines import pipeline
+>>> pipe = pipeline("automatic-speech-recognition", model="openai/whisper-tiny", device="mps")
+>>> next(pipe.model.parameters()).device
+device(type='mps', index=0)  # ← Confirmed on GPU
+```
+
+**Conclusion**: All documentation claims verified except quantization parameter reporting (now fixed in code).

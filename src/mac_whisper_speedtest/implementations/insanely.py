@@ -22,10 +22,11 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
         # Apple Silicon optimizations:
         # - Adaptive batch sizing based on available memory
         # - compute_type="float16": Optimal for MPS device acceleration
-        # - quantization="4bit": Enable 4-bit quantization for better memory efficiency
+        # - quantization="4bit": Attempted but NOT supported on macOS (bitsandbytes unavailable)
         self.batch_size = self._get_optimal_batch_size()
         self.compute_type = "float16"
-        self.quantization = "4bit"  # Enable 4-bit quantization by default
+        self.quantization = "4bit"  # Requested quantization (may not be applied)
+        self._quantization_applied = False  # Track whether quantization was actually applied
 
         self.log.info("====== ====== ====== ====== ====== ======")
         self.log.info("Implementation: Whisper implementation using Insanely Fast Whisper")
@@ -134,8 +135,10 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
                     bnb_4bit_quant_type="nf4"
                 )
                 model_kwargs["quantization_config"] = quantization_config
+                self._quantization_applied = True
                 self.log.info("Using 4-bit quantization with BitsAndBytesConfig")
             except Exception as e:
+                self._quantization_applied = False
                 self.log.warning(f"Failed to configure 4-bit quantization: {e}. "
                                f"Note: bitsandbytes is not supported on macOS/Apple Silicon.")
 
@@ -233,13 +236,20 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
         )
 
     def get_params(self) -> Dict[str, Any]:
-        """Get the parameters used for this implementation."""
+        """Get the parameters used for this implementation.
+
+        Note: Reports actual quantization status, not requested value.
+        On macOS, bitsandbytes is not supported so quantization will be "none".
+        """
+        # Report actual quantization status, not what was requested
+        actual_quantization = self.quantization if self._quantization_applied else "none"
+
         return {
             "model": self.model_name,
             "device_id": self.device_id,
             "batch_size": self.batch_size,
             "compute_type": self.compute_type,
-            "quantization": self.quantization,
+            "quantization": actual_quantization,
         }
 
     def get_model_info(self, model_name: str) -> ModelInfo:
