@@ -11,7 +11,12 @@ from mac_whisper_speedtest.utils import get_models_dir
 
 
 class WhisperMPSImplementation(WhisperImplementation):
-    """Whisper implementation using whisper-mps with Apple MPS acceleration."""
+    """Whisper implementation using whisper-mps with Apple MLX acceleration.
+
+    Note: Despite the library name 'whisper-mps', this implementation uses Apple's
+    MLX framework exclusively - NOT Metal Performance Shaders (MPS). The library
+    downloads PyTorch model files and converts them to MLX format at load time.
+    """
 
     def __init__(self):
         self.log = structlog.get_logger(__name__)
@@ -19,13 +24,13 @@ class WhisperMPSImplementation(WhisperImplementation):
         self.language = "en"  # Default to English; can be set to None for auto-detection
         self._model = None
 
-        # Check if we're on macOS (MPS only works on Apple Silicon)
+        # Check if we're on macOS (whisper-mps/MLX only works on Apple Silicon)
         if platform.system() != "Darwin":
             raise RuntimeError("whisper-mps is only supported on macOS with Apple Silicon")
 
         self.log.info("====== ====== ====== ====== ====== ======")
-        self.log.info("Implementation: Whisper implementation using whisper-mps with Apple MPS acceleration")
-        self.log.info("Whisper MPS implementation")
+        self.log.info("Implementation: Whisper implementation using whisper-mps with Apple MLX acceleration")
+        self.log.info("Whisper MPS implementation (uses MLX backend)")
         self.log.info("====== ====== ====== ====== ====== ======")
     
     def load_model(self, model_name: str) -> None:
@@ -55,8 +60,8 @@ class WhisperMPSImplementation(WhisperImplementation):
         self.log.info(f"Using models directory: {models_dir}")
 
         try:
-            # Load the model with MPS support
-            # whisper-mps automatically uses MPS when available
+            # Load the model with MLX support
+            # whisper-mps converts PyTorch models to MLX format
             self._model = load_model(
                 name=model_name,
                 download_root=str(models_dir)
@@ -89,7 +94,7 @@ class WhisperMPSImplementation(WhisperImplementation):
             from whisper_mps.whisper.transcribe import transcribe
 
             # Run transcription directly on the audio array
-            # whisper-mps can handle numpy arrays directly and uses MPS acceleration
+            # whisper-mps can handle numpy arrays directly and uses MLX acceleration
             result = transcribe(
                 audio=audio,
                 model=self.model_name,  # Use model name directly
@@ -129,7 +134,7 @@ class WhisperMPSImplementation(WhisperImplementation):
         return {
             "model": self.model_name,
             "backend": "whisper-mps",
-            "device": "mps",
+            "device": "mlx",  # Note: despite library name, uses MLX not MPS
             "language": self.language,
         }
 

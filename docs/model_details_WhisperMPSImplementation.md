@@ -7,7 +7,7 @@ This document traces the execution flow for `WhisperMPSImplementation`, document
 | Aspect | Value |
 |--------|-------|
 | **Implementation File** | `src/mac_whisper_speedtest/implementations/whisper_mps.py` |
-| **Backend Library** | `whisper-mps` (Apple MLX + MPS acceleration) |
+| **Backend Library** | `whisper-mps` (Apple MLX acceleration) |
 | **Model Source** | OpenAI Azure CDN (`openaipublic.azureedge.net`) |
 | **Download Method** | Direct HTTP download (NOT HuggingFace) |
 | **Default Cache** | `~/.cache/whisper/` (library default) |
@@ -92,7 +92,7 @@ This document traces the execution flow for `WhisperMPSImplementation`, document
 
 10. **Library transcribe()** - `whisper_mps/whisper/transcribe.py:53-118`
     - Uses `ModelHolder.get_model(model, dtype)` singleton pattern
-    - **ISSUE**: May re-download model to default cache `~/.cache/whisper/` if not found there
+    - **ISSUE**: Will re-download model to default cache `~/.cache/whisper/` if not found there (empirically confirmed)
 
 ---
 
@@ -140,13 +140,14 @@ Unlike most other implementations, `whisper-mps` downloads directly from OpenAI'
 - Uses standard `urllib` for downloads
 - SHA256 checksum validation (hash embedded in URL path)
 
-### 2. MLX Backend
-Despite the "MPS" name, the library actually uses Apple's MLX framework:
+### 2. MLX Backend (NOT MPS)
+**IMPORTANT**: Despite the "whisper-mps" library name, the library does NOT use Metal Performance Shaders (MPS). It uses Apple's MLX framework exclusively:
 ```python
 import mlx.core as mx
 from mlx.utils import tree_map
+import mlx.nn as nn
 ```
-The model is converted from PyTorch format to MLX format during loading via `torch_to_mlx()`.
+The model is converted from PyTorch format to MLX format during loading via `torch_to_mlx()`. A grep for "mps", "MPS", or "Metal" in the library source returns zero matches. The library name is misleading.
 
 ### 3. Model Holder Singleton
 The library uses a `ModelHolder` class to cache loaded models:
@@ -162,7 +163,7 @@ class ModelHolder:
             cls.model_name = model
         return cls.model
 ```
-This can cause the model to be downloaded to the default location (`~/.cache/whisper/`) even if the implementation already loaded it from a custom location.
+This will cause the model to be downloaded to the default location (`~/.cache/whisper/`) even if the implementation already loaded it from a custom location (empirically confirmed - models exist in both locations).
 
 ---
 
@@ -377,7 +378,7 @@ def get_params(self) -> Dict[str, Any]:
     return {
         "model": self.model_name,
         "backend": "whisper-mps",
-        "device": "mps",
+        "device": "mlx",  # Note: despite library name, uses MLX not MPS
         "language": self.language,
     }
 ```

@@ -48,13 +48,15 @@ The model_details files document several issues that MODEL_CACHING.md omits:
 
 #### WhisperMPS Dual Download Issue
 - `load_model()` downloads to `{project_root}/models/`
-- `transcribe()` may re-download to `~/.cache/whisper/` via library's `ModelHolder` singleton
+- `transcribe()` will re-download to `~/.cache/whisper/` via library's `ModelHolder` singleton (empirically confirmed 2025-12-31)
 - **Result**: Same model stored twice, wasting disk space
+- **Note**: Despite library name "whisper-mps", uses MLX not MPS
 
-#### WhisperMPS Large Model Filename Mismatch
+#### WhisperMPS Large Model Filename Mismatch (Empirically Confirmed 2025-12-31)
 - `load_model("large")` downloads `large-v3.pt`
 - `get_model_info("large")` looks for `large.pt`
 - **Result**: `check-models` reports "missing" for working models
+- **Verified**: `test_benchmark.py large` succeeds while `check-models --model large` reports missing
 
 #### ParakeetMLX Cache Location Verification Gap
 - Downloads to `{project_root}/models/hub/` via HF_HOME override
@@ -235,7 +237,7 @@ For use in the Quick Reference table:
 | InsanelyFastWhisperImplementation | `~/.cache/huggingface/hub/models--openai--whisper-*` | Default HF cache |
 | LightningWhisperMLXImplementation | `./mlx_models/{model}/` | Project-relative, NOT HF cache |
 | ParakeetMLXImplementation | `{project}/models/hub/models--nvidia--parakeet-*` | Custom HF cache via HF_HOME |
-| WhisperMPSImplementation | `{project}/models/*.pt` | Direct download from Azure CDN |
+| WhisperMPSImplementation | `{project}/models/*.pt` | Direct download from Azure CDN; uses MLX not MPS |
 | WhisperCppCoreMLImplementation | `{project}/models/ggml-*.bin` | Direct HTTP download |
 | WhisperKitImplementation | `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/` | Swift HubApi default |
 | FluidAudioCoreMLImplementation | `~/Library/Application Support/FluidAudio/Models/` | Swift framework default |
