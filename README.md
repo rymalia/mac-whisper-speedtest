@@ -157,6 +157,16 @@ cd tools/fluidaudio-bridge && swift build -c release && cd ../..
 .venv/bin/mac-whisper-speedtest --model small --num-runs 5
 ```
 
+### Non-Interactive Benchmarking
+
+For CI/CD pipelines, remote development, or reproducible testing:
+
+```bash
+python3 test_benchmark.py    # Uses tests/jfk.wav, runs all implementations
+```
+
+This bypasses microphone recording and uses pre-recorded audio files from `tests/`.
+
 ## Features
 
 ### Universal Transcription Display 🎯
@@ -214,9 +224,13 @@ mac-whisper-speedtest/
 │   └── fluidaudio-bridge/           # Swift bridge for FluidAudio
 │       ├── Package.swift
 │       └── Sources/fluidaudio-bridge/main.swift
+├── test_benchmark.py                 # Non-interactive benchmark runner
 ├── tests/
-│   ├── test_model_params.py         # Model parameter validation tests
-│   └── test_parakeet_integration.py # Parakeet MLX integration tests
+│   ├── jfk.wav                       # Test audio (JFK speech sample)
+│   ├── ted_60.wav                    # Test audio (60s TED talk)
+│   ├── ted_60_stereo_32.wav          # Test audio (stereo 32-bit version)
+│   ├── test_model_params.py          # Model parameter validation tests
+│   └── test_parakeet_integration.py  # Parakeet MLX integration tests
 └── README.md
 ```
 
