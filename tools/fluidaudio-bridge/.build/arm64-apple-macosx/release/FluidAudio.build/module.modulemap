@@ -1,4 +1,0 @@
-module FluidAudio {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/fluidaudio-bridge/.build/arm64-apple-macosx/release/FluidAudio.build/FluidAudio-Swift.h"
-    requires objc
-}

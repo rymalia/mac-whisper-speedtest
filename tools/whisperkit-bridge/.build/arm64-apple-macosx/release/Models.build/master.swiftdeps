@@ -1,9 +1,0 @@
-version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
-options: "e455d8d76aab94d1024ccf74e4f1f43e37d2fb65b14a51cb55ecc84f8fdbf2ae"
-build_start_time: [1754265522, 959681000]
-build_end_time: [1754265523, 506618000]
-inputs:
-  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Models/LanguageModel.swift"
-  : [1754265508, 527481790]
-  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-transformers/Sources/Models/LanguageModelTypes.swift"
-  : [1754265508, 527541291]

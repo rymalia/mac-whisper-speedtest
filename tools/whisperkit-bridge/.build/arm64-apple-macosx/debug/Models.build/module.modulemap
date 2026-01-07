@@ -1,4 +1,0 @@
-module Models {
-    header "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/arm64-apple-macosx/debug/Models.build/Models-Swift.h"
-    requires objc
-}

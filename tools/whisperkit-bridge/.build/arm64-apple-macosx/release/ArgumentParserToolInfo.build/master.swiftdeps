@@ -1,7 +1,0 @@
-version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
-options: "8edda8966ecf00bb1b1ce68a7441395817d0fcd62b99c969dd8e44a06d7be318"
-build_start_time: [1754265512, 207172000]
-build_end_time: [1754265513, 74149000]
-inputs:
-  ? "/Users/tuan/dev/mac-whisper-speedtest/tools/whisperkit-bridge/.build/checkouts/swift-argument-parser/Sources/ArgumentParserToolInfo/ToolInfo.swift"
-  : [1754265508, 310455783]

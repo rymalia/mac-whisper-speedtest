@@ -1,7 +1,7 @@
-<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
+__pycache__
 __pycache__/
-*.py[cod]
+*.py[codzw]
 *$py.class
 
 # C extensions
@@ -10,8 +10,11 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+build
+.build/
 develop-eggs/
 dist/
+dist
 downloads/
 eggs/
 .eggs/
@@ -23,8 +26,9 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
-.installed.cfg
+*.egg-info
 *.egg
+.installed.cfg
 MANIFEST
 
 # PyInstaller
@@ -49,6 +53,7 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
+.pytest_cache
 .pytest_cache/
 cover/
 
@@ -131,6 +136,8 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.env/
+.venv/
 env/
 venv/
 ENV/
@@ -173,29 +180,15 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-||||||| (empty tree)
-=======
-venv/
+
 .DS_Store
-*.pyc
-*.pyo
-*.pyd
-*.pyz
-*.pyw
-*.pyc
-*.pyo
-*.pyd
-*.pyz
-*.pyw
-__pycache__
 experiments
+
 # pixi environments
 .pixi
-*.egg-info
-dist
-.venv
-build
-.pytest_cache
+
+# LLM model file working folders
 models
 mlx_models
->>>>>>> e25327b (feat: first working version)
+
+.claude/
