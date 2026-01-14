@@ -11,7 +11,18 @@ from mac_whisper_speedtest.utils import get_models_dir
 
 
 class WhisperMPSImplementation(WhisperImplementation):
-    """Whisper implementation using whisper-mps with Apple MPS acceleration."""
+    """Whisper implementation using the whisper-mps library.
+
+    NOTE: Despite the name 'whisper-mps', this library actually uses MLX (Apple's
+    Machine Learning framework), NOT MPS (Metal Performance Shaders). It predates
+    the now-popular mlx-whisper package and appears to be Apple's early MLX Whisper
+    reference implementation (copyright notice: "Copyright © 2023 Apple Inc.").
+
+    Key characteristics vs mlx-whisper:
+    - Downloads PyTorch .pt files from OpenAI Azure CDN (not HuggingFace)
+    - Converts PyTorch→MLX at runtime (~20s overhead for large models)
+    - No large-v3-turbo or quantized model variants available
+    """
 
     def __init__(self):
         self.log = structlog.get_logger(__name__)
@@ -124,7 +135,7 @@ class WhisperMPSImplementation(WhisperImplementation):
         return {
             "model": self.model_name,
             "backend": "whisper-mps",
-            "device": "mps",
+            "framework": "mlx",  # Note: Despite the name, whisper-mps uses MLX, not MPS
             "language": self.language,
         }
 

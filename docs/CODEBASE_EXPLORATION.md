@@ -48,8 +48,10 @@ class BenchmarkResult:
 |----------------|------|-------------|--------------|
 | **mlx-whisper** | `mlx.py` | numpy array | Quantization detection, fallback chains |
 | **faster-whisper** | `faster.py` | numpy array | CPU P/E core optimization |
-| **whisper-mps** | `whisper_mps.py` | numpy array | Native MPS acceleration |
+| **whisper-mps** | `whisper_mps.py` | numpy array | MLX-based (see note below) |
 | **whisper.cpp** | `coreml.py` | numpy array | CoreML environment variable |
+
+> **Note on whisper-mps**: Despite the name suggesting MPS (Metal Performance Shaders), this library actually uses **MLX** internally. See [Historical Context](#historical-context-whisper-mps) below.
 
 ### 2. File-Based Python (Temp WAV Required)
 
@@ -72,10 +74,10 @@ class BenchmarkResult:
 
 ### 1. Model Name Mapping Pattern
 
-**Every implementation** has a model mapping dictionary:
+**Most implementations** have a model mapping dictionary:
 
 ```python
-# Pattern found in ALL implementations
+# Pattern found in MOST implementations
 model_map = {
     "tiny": "<implementation-specific-tiny>",
     "small": "<implementation-specific-small>",
@@ -167,7 +169,9 @@ return TranscriptionResult(text=text, segments=segments, language=language)
 | **Single attempt** | lightning, whisper_mps, coreml | Simple, fails fast |
 | **Fallback chain** | mlx, faster | Tries multiple models sequentially |
 | **Quantization preference** | mlx, insanely | Prefers quantized, falls back to full |
-| **Fixed model** | parakeet, fluidaudio | Ignores model_name, uses single model |
+| **Fixed model** | parakeet, fluidaudio | Ignores model_name parameter, uses hardcoded model |
+
+#### Good Unique 👍: 
 
 **faster-whisper's fallback chain** (`faster.py:40-56`) is elegant:
 ```python
@@ -177,6 +181,29 @@ def _get_model_fallback_chain(self, model_name: str) -> List[str]:
     return [model_name]
 ```
 This pattern ensures users always get the best available model variant.
+
+#### Frustrating Unique 👎: 
+
+**faster-whisper's model name mapping dictionary** lives in its python library:
+path: `.venv/lib/python3.12/site-packages/faster_whisper/utils.py`
+
+```python
+_MODELS = {
+    "tiny": "Systran/faster-whisper-tiny",
+    "small": "Systran/faster-whisper-small",
+    "medium": "Systran/faster-whisper-medium",
+    "large": "Systran/faster-whisper-large-v3",
+    "large-v3": "Systran/faster-whisper-large-v3",
+    "large-v3-turbo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+    # ... more variants
+}
+```
+
+#### fluidaudio's odd model folder location 🤷‍♂️:  
+
+* fluidaudio-bridge uses same folder for model download cache & runtime loading.
+* `~Library/Application Support/FluidAudio/Models/`
+* *This location is not configurable via the bridge at this time.*
 
 ### 2. Timing Measurement
 
@@ -232,7 +259,7 @@ elif available_memory_gb >= 16:
 | **Fixed "en"** | fluidaudio |
 | **From response** | WhisperKit |
 
-Parakeet's language detection heuristic (`parakeet_mlx.py:183-209`) is unique:
+Parakeet MLX's language detection heuristic (`parakeet_mlx.py:183-209`) is unique:
 ```python
 def _contains_non_english_patterns(self, text: str) -> bool:
     german_indicators = ['und', 'der', 'die', 'das', 'ß', 'ä', 'ö', 'ü']
@@ -459,6 +486,31 @@ This would allow third-party implementations without modifying the registry.
 | `test_benchmark.py` | Non-interactive benchmarking for agents/CI |
 | `audio.py` | Audio recording and format conversion |
 | `utils.py` | Shared utilities (models directory, project root) |
+
+---
+
+## Historical Context: whisper-mps
+
+Despite its name suggesting MPS (Metal Performance Shaders), the `whisper-mps` library actually uses **MLX** (Apple's Machine Learning framework) internally. This makes it architecturally similar to `mlx-whisper`, not to a true PyTorch+MPS implementation.
+
+**Evidence from library source code:**
+```python
+# .venv/.../whisper_mps/whisper/whisper.py
+import mlx.core as mx
+import mlx.nn as nn
+```
+
+**Historical context:** The copyright notice reads "Copyright © 2023 Apple Inc.", suggesting this was Apple's early MLX Whisper reference implementation, released before the now-popular `mlx-whisper` community package existed. The "MPS" name likely reflects initial development plans or marketing considerations from when MLX was less well-known.
+
+**Key differences from mlx-whisper:**
+| Aspect | whisper-mps | mlx-whisper |
+|--------|-------------|-------------|
+| Model source | OpenAI Azure CDN (.pt files) | HuggingFace (pre-converted MLX) |
+| Conversion | PyTorch→MLX at runtime (~20s for large) | Pre-converted, no runtime overhead |
+| Model variants | Original OpenAI only (no turbo) | Includes large-v3-turbo, quantized |
+| Cache location | `~/.cache/whisper/` or project `models/` | HuggingFace cache |
+
+**Recommendation:** For new projects, prefer `mlx-whisper` over `whisper-mps` due to faster model loading and access to newer model variants.
 
 ---
 

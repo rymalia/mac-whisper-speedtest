@@ -43,7 +43,7 @@ Demo: https://x.com/anvanvan/status/1913624854584037443
 
 ## Overview
 
-This tool measures transcription performance across different implementations of the same base model (e.g., all variants of "small"). It helps you find the fastest Whisper implementation on your Apple Silicon Mac for a given base model. With **8 different implementations** including native Swift frameworks, MLX-based solutions, and CPU-optimized variants, you can find the perfect balance of speed and accuracy for your use case.
+This tool measures transcription performance across different implementations of the same base model (e.g., all variants of "small"). It helps you find the fastest Whisper implementation on your Apple Silicon Mac for a given base model. With **9 different implementations** including native Swift frameworks, MLX-based solutions, and CPU-optimized variants, you can find the perfect balance of speed and accuracy for your use case.
 
 ## Features
 
@@ -113,7 +113,8 @@ This tool measures transcription performance across different implementations of
    - **Performance**: 2.0% faster with intelligent core detection (performance vs efficiency cores)
 
 9. **whisper.cpp + CoreML**
-   - Source: https://github.com/abdeladim-s/pywhispercpp
+   - Source: https://github.com/abdeladim-s/pywhispercpp (Python bindings for whisper.cpp)
+   - Source: https://github.com/ggml-org/whisper.cpp
    - **Technology**: C++ implementation with optional CoreML acceleration
    - **Performance**: Excellent baseline performance with CoreML support
 

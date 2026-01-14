@@ -47,13 +47,21 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
         """Load the FluidAudio model (via Swift bridge).
 
         Args:
-            model_name: Model size (currently only supports 'small' equivalent)
+            model_name: FluidAudio ignores this! Hardcoded to "parakeet-tdt-0.6b-v2-coreml" (somewhere in bridge code ??).
+        
+        Note: 
+            fluidaudio-bridge uses same folder for model download cache & runtime loading.
+            ~Library/Application Support/FluidAudio/Models/
+            ** This location is not configurable via the bridge at this time. **
         """
         if not self._bridge_path:
             raise RuntimeError("FluidAudio bridge not available")
 
         self.model_name = model_name
-        self.log.info(f"FluidAudio bridge ready for model: {self.model_name}")
+        self.log.info(f"FluidAudio bridge ready for model")
+        self.log.info(f"Loading model: {self.model_name}")
+        self.log.info(f"Just kidding! fluidaudio-bridge ignores model_name parameter!")
+        self.log.info(f"fluidaudio-bridge uses hard-coded model: parakeet-tdt-0.6b-v2-coreml")
 
         # Test that the bridge is working by running it with --help
         try:
@@ -194,7 +202,7 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
     def get_params(self) -> Dict[str, Any]:
         """Get the parameters used for this implementation."""
         return {
-            "model": "parakeet-tdt-0.6b-v2-coreml",
+            "model": "parakeet-tdt-0.6b-v2-coreml", # Hardcoded here because it's hardcoded in the bridge
             "backend": "FluidAudio Swift Bridge",
             "platform": "Apple Silicon",
         }

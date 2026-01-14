@@ -40,9 +40,9 @@ class ParakeetMLXImplementation(WhisperImplementation):
             raise
 
         self.model_name = model_name
-        self.log.info(f"Loading Parakeet MLX model {self.model_name}")
+        self.log.info(f"Loading Parakeet MLX model parameter: {self.model_name}")
 
-        # Map model name to the format expected by parakeet-mlx
+        # Map model name input to the format expected by parakeet-mlx
         model_map = {
             # Specific model names
             "parakeet-tdt-0.6b": "mlx-community/parakeet-tdt-0.6b-v2",
@@ -51,6 +51,7 @@ class ParakeetMLXImplementation(WhisperImplementation):
             "parakeet-ctc-0.6b": "mlx-community/parakeet-ctc-0.6b",
             "parakeet-ctc-1.1b": "mlx-community/parakeet-ctc-1.1b",
             # Size-based mappings (optimized for best performance using newest model)
+            # NOTE: All sizes map to the same model 
             "tiny": "mlx-community/parakeet-tdt-0.6b-v2",
             "small": "mlx-community/parakeet-tdt-0.6b-v2",
             "base": "mlx-community/parakeet-tdt-0.6b-v2",
