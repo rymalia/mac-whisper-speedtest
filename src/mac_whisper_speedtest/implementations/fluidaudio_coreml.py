@@ -53,6 +53,11 @@ class FluidAudioCoreMLImplementation(WhisperImplementation):
 
         Args:
             model_name: Model size (currently only supports 'small' equivalent)
+        
+        Note: 
+            fluidaudio-bridge uses same folder for model download cache & runtime loading.
+            ~Library/Application Support/FluidAudio/Models/ 
+            ** This location is not configurable via the bridge at this time. **
         """
         if not self._bridge_path:
             raise RuntimeError("FluidAudio bridge not available")

@@ -51,7 +51,7 @@ class BenchmarkSummary:
             key=lambda r: r.transcription_time
         )
 
-        # Map implementation names to shorter versions
+        # Map implementation names to display names for Benchmark Results table 
         name_map = {
             "WhisperCppCoreMLImplementation": "whisper.cpp-coreml",
             "MLXWhisperImplementation": "mlx-whisper",
@@ -68,11 +68,14 @@ class BenchmarkSummary:
             # Use the short name if available, otherwise use the original
             short_name = name_map.get(result.implementation, result.implementation)
 
+            print(f"\n--- result.model_params: {result.model_params} ---\n")
+
             # Extract the actual model being used for clearer display
             actual_model = result.model_params.get("model", result.model_name)
             if isinstance(actual_model, str) and "/" in actual_model:
                 # Show just the model name part for HF repos (e.g., "mlx-community/whisper-small" -> "whisper-small")
-                model_display = actual_model.split("/")[-1]
+                # model_display = actual_model.split("/")[-1]
+                model_display = str(actual_model)
             else:
                 model_display = str(actual_model)
 

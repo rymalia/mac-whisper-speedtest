@@ -88,6 +88,9 @@ class WhisperModel:
 
 ### 5. Library's download_model(): `faster_whisper/utils.py:49-124`
 
+**These model mappings are fixed hardcoded in the faster_whisper package library**  
+path: `.venv/lib/python3.12/site-packages/faster_whisper/utils.py`
+
 ```python
 _MODELS = {
     "tiny": "Systran/faster-whisper-tiny",
@@ -132,7 +135,7 @@ https://huggingface.co/Systran/faster-whisper-medium/resolve/main/tokenizer.json
 https://huggingface.co/Systran/faster-whisper-medium/resolve/main/vocabulary.json
 ```
 
-### 7. Cache Behavior (Custom Directory)
+### 7. Cache Behavior (Custom Directory) in Project Root
 
 | Aspect | Location |
 |--------|----------|
@@ -197,6 +200,7 @@ async def transcribe(self, audio: np.ndarray) -> TranscriptionResult:
 | Aspect | Value |
 |--------|-------|
 | **Requested Model** | `medium` |
+| **Model Mapping Dictionary** | in `faster_whisper` python package<br>(not configurable for distribution) |
 | **Actual Repo Used** | `Systran/faster-whisper-medium` |
 | **Download URL Pattern** | `https://huggingface.co/Systran/faster-whisper-medium/resolve/main/{file}` |
 | **Custom Cache Location** | `{project_root}/models/models--Systran--faster-whisper-medium/` |

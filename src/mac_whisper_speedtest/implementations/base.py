@@ -11,6 +11,22 @@ import numpy as np
 @dataclass
 class ModelInfo:
     """Information about a model's requirements and cache locations."""
+    # Standardized model info components:
+    # Is Whisper: bool # most are Whisper-based, but some may not be (e.g., parakeet)
+    # model repo id: <username_or_org>/<repo_name> or <namespace>/<model_name>
+    #
+    #   Why isn't from huggingface_hub import hf_hub_download being used?
+    #   Because some implementations may not use HuggingFace at all, or may
+    #   use a different download mechanism ??
+    #
+    # full download url: 
+    # model version: e.g., "v1.0", "v2.1"  # optional
+    # size group: tiny, base, small, medium, large
+    # model size in params: e.g., 1.5B, 4B, 7B 
+    # quantization: e.g., "4bit", "8bit", "float16"
+    # distillation: bool # optional
+    # cache download paths: list of expected cache directories/files
+    # runtime path: location where model files are ran from
     model_name: str  # The actual model identifier (e.g., "whisper-medium-mlx-4bit")
     repo_id: Optional[str] = None  # HuggingFace repo ID if applicable
     cache_paths: List[Path] = field(default_factory=list)  # Expected cache locations

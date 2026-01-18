@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -198,7 +197,6 @@ build
 .pytest_cache
 models
 mlx_models
->>>>>>> e25327b (feat: first working version)
 
 .build/
 .claude/
