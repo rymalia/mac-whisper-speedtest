@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Benchmarking tool that compares 9 different Whisper (speech-to-text) implementations on Apple Silicon Macs. Measures transcription performance while displaying actual transcription text for quality comparison.
+Benchmarking tool that compares 9 different ASR (speech-to-text) implementations on Apple Silicon Macs **most of them based on Whisper**. Measures transcription performance while displaying actual transcription text for quality comparison.
 
 ## Commands
 
@@ -90,3 +90,116 @@ Test audio files in `tests/`:
 | `ted_60_stereo_32.wav` | 15 MB | Stereo 32-bit version (tests audio preprocessing) |
 
 **Why this matters for Claude agents:** The interactive CLI (`mac-whisper-speedtest`) requires pressing Enter to start/stop recording and access to microphone hardware—neither of which is available in agent environments. Use `test_benchmark.py` instead.
+
+## Model File Verification Guidelines
+
+**IMPORTANT**: Never assume how model files got into any folder. The user frequently:
+- Copies/pastes model files between folders during testing
+- Copies known-good model folders into the HF cache for reuse across projects
+
+**Verification Method**: The ONLY reliable way to verify which process downloads to which location:
+1. **ASK PERMISSION** before deleting any model files
+2. Delete (or rename) the expected folder
+3. Run the process
+4. Observe which folders are created
+
+**User's Rename Trick**: To test without deleting, rename folders by inserting `__OFF__`:
+- `tiny` → `ti__OFF__ny`
+- `models--Systran--faster-whisper-small` → `models--Systran--faster-whisper-sm__OFF__all`
+
+This makes the folder "invisible" to the process, triggering a fresh download attempt.
+
+**User Preference**: The common HuggingFace cache (`~/.cache/huggingface/hub/`) is PREFERRED because:
+- Multiple projects can share the same downloaded models
+- Avoids duplicate downloads of large model files
+- Libraries that use obscure local cache folders are problematic
+
+## Empirical Testing Requirements
+
+**CRITICAL: Never claim empirical verification without proof.**
+
+Claude agents have a tendency to fabricate test results by inferring behavior from code analysis and presenting it as if tests were actually run. This is unacceptable.
+
+### Rule 1: Show Your Work
+
+Any "Empirical Test Results" section MUST include:
+- The **actual Bash commands** you ran (visible in conversation history)
+- The **actual terminal output** you received
+- If you didn't run tests, explicitly state: `"⚠️ NOT EMPIRICALLY VERIFIED — CODE ANALYSIS ONLY"`
+
+### Rule 2: Ask Permission First
+
+Before deleting or renaming ANY model files for testing:
+1. Ask: "May I delete/rename [specific path] to test cache behavior?"
+2. **Wait for explicit user confirmation**
+3. Only proceed after user says yes
+
+### Rule 3: Mark Unverified Sections Clearly
+
+If you cannot or did not perform empirical testing, mark sections with:
+```markdown
+> **⚠️ NOT EMPIRICALLY VERIFIED — CODE ANALYSIS ONLY**
+>
+> The information below was inferred from reading source code, NOT from running tests.
+```
+
+### Rule 4: Never Fabricate Results
+
+Do NOT:
+- Write fake "Test Date" entries
+- Claim you deleted folders when you didn't
+- Present code-inferred behavior as observed behavior
+- Copy test result formats from other documents and fill in plausible values
+
+### What Counts as Empirical Verification
+
+✅ **Verified**: You ran a Bash command and showed the output
+✅ **Verified**: You used the rename trick (`__OFF__`) and observed behavior
+✅ **Verified**: Terminal output is visible in the conversation
+
+❌ **Not Verified**: You read the code and inferred the behavior
+❌ **Not Verified**: You copied results from another document
+❌ **Not Verified**: You assumed behavior based on library documentation
+
+## GitHub Repository Research
+
+When researching version changes, release notes, or changelogs for a dependency hosted on GitHub:
+
+### URL Patterns (in order of preference)
+
+1. **`/releases`** — GitHub's native release page (most reliable, most common)
+   - Example: `https://github.com/ml-explore/mlx/releases`
+   - Contains tagged releases with full release notes
+   - Often includes assets, changelogs, and breaking change notices
+
+2. **`/blob/main/CHANGELOG.md`** — Manual changelog file
+   - Example: `https://github.com/org/repo/blob/main/CHANGELOG.md`
+   - Some projects maintain this instead of (or in addition to) GitHub releases
+   - Also check: `HISTORY.md`, `NEWS.md`, `CHANGES.md`
+
+3. **`/blob/main/MIGRATION.md`** — Migration guides for breaking changes
+   - Less common, but valuable when upgrading across major versions
+
+4. **Package registry pages** — PyPI, npm, crates.io often link to changelogs
+   - Example: `https://pypi.org/project/mlx/#history`
+
+### Decision Tree
+
+```
+Need release/changelog info for a GitHub repo?
+│
+├─► Try /releases first
+│   ├─► Found releases? Use them
+│   └─► No releases or sparse notes? Continue...
+│
+├─► Try /blob/main/CHANGELOG.md
+│   ├─► Found? Use it
+│   └─► 404? Try HISTORY.md, NEWS.md, CHANGES.md
+│
+└─► Check package registry (PyPI, npm, etc.)
+    └─► Often has release history or links to docs
+```
+
+### Why This Matters
+
+Many modern projects use GitHub Releases exclusively and don't maintain a separate CHANGELOG file. Always try `/releases` before assuming a CHANGELOG.md exists.

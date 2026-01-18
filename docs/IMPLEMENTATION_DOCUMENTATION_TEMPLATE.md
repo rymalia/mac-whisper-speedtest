@@ -213,7 +213,7 @@ A documentation file is ONLY considered complete when:
 
 Track which implementations have been documented:
 
-- [ ] `LightningWhisperMLXImplementation` - docs/model_details_LightningWhisperMLXImplementation.md
+- [x] `LightningWhisperMLXImplementation` - docs/model_details_LightningWhisperMLXImplementation.md
 - [x] `MLXWhisperImplementation` - docs/model_details_MLXWhisperImplementation.md
 - [x] `ParakeetMLXImplementation` - docs/model_details_ParakeetMLXImplementation.md
 - [x] `InsanelyFastWhisperImplementation` - docs/model_details_InsanelyFastWhisperImplementation.md
