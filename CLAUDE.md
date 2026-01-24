@@ -48,12 +48,22 @@ cd tools/fluidaudio-bridge && swift build -c release       # Build FluidAudio br
 ```
 
 ### Run Benchmarks
+
+**Interactive mode (microphone):**
 ```bash
 .venv/bin/mac-whisper-speedtest                           # Default: small model, all implementations
-.venv/bin/mac-whisper-speedtest --model large             # Specific model (tiny/small/base/medium/large)
-.venv/bin/mac-whisper-speedtest --implementations "WhisperKitImplementation,MLXWhisperImplementation"
-.venv/bin/mac-whisper-speedtest --num-runs 5              # Multiple runs for statistical accuracy
+.venv/bin/mac-whisper-speedtest -m large -n 5             # Large model, 5 runs
+.venv/bin/mac-whisper-speedtest -i "WhisperKitImplementation,MLXWhisperImplementation"
 ```
+
+**Non-interactive (batch) mode — for CI/agents:**
+```bash
+.venv/bin/mac-whisper-speedtest --batch                   # Uses default audio (tests/jfk.wav)
+.venv/bin/mac-whisper-speedtest --batch --audio tests/ted_60.wav
+.venv/bin/mac-whisper-speedtest -b -m large -n 1 -i "MLXWhisperImplementation"
+```
+
+**CLI flags:** `-m` model, `-n` runs, `-i` implementations, `-b` batch, `-a` audio
 
 ### Tests
 ```bash
@@ -73,7 +83,7 @@ CLI (typer) → Audio Recording (PyAudio @ 16kHz) → Benchmark Runner (async)
 
 ### Key Components
 
-- **`cli.py`**: Entry point, handles `--model`, `--implementations`, `--num-runs` args
+- **`cli.py`**: Entry point, handles `--model`, `--implementations`, `--runs`, `--batch`, `--audio` args
 - **`benchmark.py`**: Core benchmarking logic with `BenchmarkConfig` and `BenchmarkSummary` dataclasses
 - **`audio.py`**: Records audio at 16kHz/16-bit mono, converts to float32 numpy arrays
 - **`implementations/__init__.py`**: Dynamic registry with conditional imports based on available packages
@@ -105,11 +115,14 @@ All 9 implementations inherit from `WhisperImplementation` and must implement:
 
 
 ## Non-Interactive Benchmarking (Recommended for Agents/CI)
+
+Use `--batch` mode to bypass microphone recording:
 ```bash
-python3 test_benchmark.py                    # Uses tests/jfk.wav, runs all implementations
+.venv/bin/mac-whisper-speedtest --batch                   # Uses tests/jfk.wav
+.venv/bin/mac-whisper-speedtest -b --audio tests/ted_60.wav -n 1
 ```
 
-This script bypasses microphone recording and uses pre-recorded audio files, enabling:
+This enables:
 - **Automated testing** in CI/CD pipelines
 - **Agent-based development** (Claude agents cannot access microphones or respond to prompts)
 - **Reproducible debugging** (same audio input = deterministic comparison across runs)
@@ -121,7 +134,7 @@ Test audio files in `tests/`:
 | `ted_60.wav` | 1.9 MB | 60-second TED talk audio |
 | `ted_60_stereo_32.wav` | 15 MB | Stereo 32-bit version (tests audio preprocessing) |
 
-**Why this matters for Claude agents:** The interactive CLI (`mac-whisper-speedtest`) requires pressing Enter to start/stop recording and access to microphone hardware—neither of which is available in agent environments. Use `test_benchmark.py` instead.
+**Why this matters for Claude agents:** Interactive mode requires pressing Enter to start/stop recording and access to microphone hardware—neither of which is available in agent environments. Always use `--batch` mode.
 
 ## Model File Verification Guidelines
 

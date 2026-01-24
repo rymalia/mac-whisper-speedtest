@@ -1,6 +1,6 @@
 # Whisper Benchmark for Apple Silicon
 
-A comprehensive benchmarking tool to compare different Whisper implementations optimized for Apple Silicon, focusing on speed while maintaining accuracy. Now supports **8 different implementations** including native Swift frameworks and MLX-based solutions.
+A comprehensive benchmarking tool to compare different Whisper implementations optimized for Apple Silicon, focusing on speed while maintaining accuracy. Now supports **9 different implementations** including native Swift frameworks and MLX-based solutions.
 
 ## Example output
 
@@ -138,35 +138,48 @@ cd tools/fluidaudio-bridge && swift build -c release && cd ../..
 
 ## Usage
 
+### Interactive Mode (Microphone Recording)
+
 ```bash
 # Run benchmark with default settings (small model, all implementations)
 .venv/bin/mac-whisper-speedtest
 
 # Run benchmark with a specific model
-.venv/bin/mac-whisper-speedtest --model small
+.venv/bin/mac-whisper-speedtest -m large
 
 # Run benchmark with specific implementations
-.venv/bin/mac-whisper-speedtest --model small --implementations "WhisperKitImplementation,FluidAudioCoreMLImplementation,ParakeetMLXImplementation"
-
-# Test only the fastest native implementations
-.venv/bin/mac-whisper-speedtest --model small --implementations "WhisperKitImplementation,FluidAudioCoreMLImplementation"
-
-# Test MLX-based implementations
-.venv/bin/mac-whisper-speedtest --model small --implementations "MLXWhisperImplementation,ParakeetMLXImplementation,LightningWhisperMLXImplementation"
+.venv/bin/mac-whisper-speedtest -m small -i "WhisperKitImplementation,FluidAudioCoreMLImplementation"
 
 # Run benchmark with more runs for statistical accuracy
-.venv/bin/mac-whisper-speedtest --model small --num-runs 5
+.venv/bin/mac-whisper-speedtest -m small -n 5
 ```
 
-### Non-Interactive Benchmarking
+### Non-Interactive Mode (Batch)
 
 For CI/CD pipelines, remote development, or reproducible testing:
 
 ```bash
-python3 test_benchmark.py    # Uses tests/jfk.wav, runs all implementations
+# Use default test audio (tests/jfk.wav)
+.venv/bin/mac-whisper-speedtest --batch
+
+# Use custom audio file
+.venv/bin/mac-whisper-speedtest --batch --audio tests/ted_60.wav
+
+# Batch mode with all options
+.venv/bin/mac-whisper-speedtest -b -m large -n 1 -i "MLXWhisperImplementation"
 ```
 
-This bypasses microphone recording and uses pre-recorded audio files from `tests/`.
+This bypasses microphone recording and uses pre-recorded audio files.
+
+### CLI Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--model` | `-m` | Model size: tiny/base/small/medium/large | small |
+| `--runs` | `-n` | Number of runs per implementation | 3 |
+| `--implementations` | `-i` | Comma-separated implementation names | all |
+| `--batch` | `-b` | Non-interactive mode (use audio file) | off |
+| `--audio` | `-a` | Audio file path for batch mode | tests/jfk.wav |
 
 ## Features
 
@@ -225,7 +238,6 @@ mac-whisper-speedtest/
 │   └── fluidaudio-bridge/           # Swift bridge for FluidAudio
 │       ├── Package.swift
 │       └── Sources/fluidaudio-bridge/main.swift
-├── test_benchmark.py                 # Non-interactive benchmark runner
 ├── tests/
 │   ├── jfk.wav                       # Test audio (JFK speech sample)
 │   ├── ted_60.wav                    # Test audio (60s TED talk)

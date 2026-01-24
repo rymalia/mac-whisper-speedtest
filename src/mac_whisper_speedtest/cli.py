@@ -1,8 +1,9 @@
 """Command-line interface for the Whisper benchmark tool."""
 
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
+import numpy as np
 import structlog
 import typer
 
@@ -18,14 +19,69 @@ from mac_whisper_speedtest.utils import get_models_dir
 log = structlog.get_logger(__name__)
 app = typer.Typer()
 
+# ─────────────────────────────────────────────────────────────
+# Default values for CLI options
+# ─────────────────────────────────────────────────────────────
+DEFAULT_MODEL = "small"
+DEFAULT_NUM_RUNS = 3
+DEFAULT_AUDIO_FILE = "tests/jfk.wav"
+
+
+def load_audio_file(file_path: str) -> np.ndarray:
+    """Load audio file and convert to Whisper-compatible format (16kHz mono float32)."""
+    import os
+
+    import soundfile as sf
+
+    # Validate file exists
+    if not os.path.exists(file_path):
+        raise typer.BadParameter(f"Audio file not found: {file_path}")
+
+    try:
+        print(f"Loading audio from: {file_path}")
+        audio_data, sample_rate = sf.read(file_path, dtype="float32")
+        print(f"Loaded audio: {len(audio_data)} samples at {sample_rate} Hz")
+    except Exception as e:
+        raise typer.BadParameter(f"Failed to read audio file: {e}")
+
+    # Ensure mono
+    if len(audio_data.shape) > 1:
+        audio_data = audio_data.mean(axis=1)
+        print("Converted stereo to mono")
+
+    # Resample to 16kHz if needed
+    if sample_rate != 16000:
+        import librosa
+
+        audio_data = librosa.resample(audio_data, orig_sr=sample_rate, target_sr=16000)
+        print(f"Resampled to 16kHz: {len(audio_data)} samples")
+
+    return audio_data
+
 
 @app.command()
 def benchmark(
-    model: str = typer.Option("small", help="Model size to benchmark"),
-    implementations: Optional[str] = typer.Option(
-        None, help="Specific implementations to benchmark (comma-separated)"
+    model: str = typer.Option(
+        DEFAULT_MODEL, "--model", "-m", help="Model size: tiny/base/small/medium/large"
     ),
-    num_runs: int = typer.Option(3, help="Number of runs per implementation"),
+    implementations: Optional[str] = typer.Option(
+        None,
+        "--implementations",
+        "-i",
+        help="Comma-separated implementation names to benchmark",
+    ),
+    num_runs: int = typer.Option(
+        DEFAULT_NUM_RUNS, "--runs", "-n", help="Number of runs per implementation"
+    ),
+    batch: bool = typer.Option(
+        False,
+        "--batch",
+        "-b",
+        help="Non-interactive mode using audio file instead of microphone",
+    ),
+    audio_file: str = typer.Option(
+        DEFAULT_AUDIO_FILE, "--audio", "-a", help="Audio file path for batch mode"
+    ),
 ):
     """Benchmark different Whisper implementations on Apple Silicon."""
     # Configure logging
@@ -36,10 +92,6 @@ def benchmark(
             structlog.dev.ConsoleRenderer(),
         ]
     )
-
-    # Use default device
-    device_index, device_name = get_default_device()
-    print(f"Using default input device: {device_name}")
 
     # Get implementations to benchmark
     all_impls = get_all_implementations()
@@ -54,32 +106,17 @@ def benchmark(
     else:
         impls_to_run = all_impls
 
-    # Record audio
-    print("\nPress Enter to start recording. Press Enter again to stop recording...")
-    input()
-    print("Recording... Press Enter to stop.")
+    # Auto-enable batch mode if --audio is explicitly provided with non-default value
+    if audio_file != DEFAULT_AUDIO_FILE and not batch:
+        print("Note: --audio provided, enabling batch mode automatically")
+        batch = True
 
-    # Create stop event for recording
-    stop_event = asyncio.Event()
-
-    # Run the async parts in a new event loop
-    async def run_async_parts():
-        # Start recording task
-        record_task = asyncio.create_task(
-            record_audio(
-                stop_event,
-                convert=to_whisper_ndarray,
-                device=device_index,
-            )
-        )
-
-        # Wait for user to press Enter to stop recording
-        await asyncio.get_event_loop().run_in_executor(None, input)
-        stop_event.set()
-
-        # Get recorded audio
-        audio_data = await record_task
-        print("Recording stopped. Starting benchmark...")
+    if batch:
+        # ─────────────────────────────────────────────────────────────
+        # Non-interactive mode: load from file
+        # ─────────────────────────────────────────────────────────────
+        audio_data = load_audio_file(audio_file)
+        print(f"Audio ready for Whisper: {len(audio_data)} samples")
 
         # Run benchmark
         config = BenchmarkConfig(
@@ -89,12 +126,56 @@ def benchmark(
             audio_data=audio_data,
         )
 
-        summary = await run_benchmark(config)
-        return summary
+        print("\nStarting benchmark...")
+        summary = asyncio.run(run_benchmark(config))
+        summary.print_summary()
+    else:
+        # ─────────────────────────────────────────────────────────────
+        # Interactive mode: record from microphone
+        # ─────────────────────────────────────────────────────────────
+        device_index, device_name = get_default_device()
+        print(f"Using default input device: {device_name}")
 
-    # Run the async parts and get the summary
-    summary = asyncio.run(run_async_parts())
-    summary.print_summary()
+        print("\nPress Enter to start recording. Press Enter again to stop recording...")
+        input()
+        print("Recording... Press Enter to stop.")
+
+        # Create stop event for recording
+        stop_event = asyncio.Event()
+
+        # Run the async parts in a new event loop
+        async def run_async_parts():
+            # Start recording task
+            record_task = asyncio.create_task(
+                record_audio(
+                    stop_event,
+                    convert=to_whisper_ndarray,
+                    device=device_index,
+                )
+            )
+
+            # Wait for user to press Enter to stop recording
+            await asyncio.get_event_loop().run_in_executor(None, input)
+            stop_event.set()
+
+            # Get recorded audio
+            audio_data = await record_task
+            print("Recording stopped. Starting benchmark...")
+
+            # Run benchmark
+            config = BenchmarkConfig(
+                model_name=model,
+                implementations=impls_to_run,
+                num_runs=num_runs,
+                audio_data=audio_data,
+            )
+
+            summary = await run_benchmark(config)
+            return summary
+
+        # Run the async parts and get the summary
+        summary = asyncio.run(run_async_parts())
+        summary.print_summary()
 
 
 def main():
