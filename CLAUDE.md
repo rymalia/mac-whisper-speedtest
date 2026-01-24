@@ -6,6 +6,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Benchmarking tool that compares 9 different ASR (speech-to-text) implementations on Apple Silicon Macs **most of them based on Whisper**. Measures transcription performance while displaying actual transcription text for quality comparison.
 
+## Session Continuity (READ THIS FIRST)
+
+**At the start of every new session**, check for session summary documents:
+
+```bash
+ls -t docs/SESSION_SUMMARY*.md | head -1
+```
+
+If a session summary exists, **read it immediately** before doing any other work. These documents contain:
+- Unfinished work and next steps from the previous session
+- Current state of important files (especially anything in `.state/`)
+- Warnings about files that may have been edited between sessions
+- Context that prevents repeating already-completed investigations
+
+**Confirm to the user you have reviewed this session summary in your opening greeting of the session**
+
+
+## Session Summaries
+
+**IMPORTANT:** At the end of each coding session, generate a comprehensive session summary and save it to `docs/SESSION_SUMMARY_YYYY-MM-DD_{VERY SHORT DESCRIPTOR}.md`.
+
+The summary should include:
+- **Key Decisions Made**: Strategic choices and rationale
+- **Files Modified**: List of all changed files with descriptions
+- **Issues Fixed**: Problems identified and solutions implemented
+- **Testing Performed**: Verification and validation steps
+- **Summary Statistics**: Lines changed, bugs fixed, etc.
+- **Unfinished work**: notes and next steps on things that didn't get finished 
+- Context that prevents repeating already-completed investigations
+
+
+
 ## Commands
 
 ### Setup
