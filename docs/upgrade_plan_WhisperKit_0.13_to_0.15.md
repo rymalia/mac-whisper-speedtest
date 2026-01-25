@@ -271,8 +271,7 @@ swift build -c release
 
 #### Step 1.6: Test Python Integration
 ```bash
-cd ../..
-.venv/bin/python3 test_benchmark2.py small 2 WhisperKitImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i WhisperKitImplementation
 ```
 
 #### Step 1.7: Commit
@@ -335,13 +334,11 @@ swift build -c release
 
 #### Step 2.4: Full Test Suite
 ```bash
-cd ../..
-
 # Small model
-.venv/bin/python3 test_benchmark2.py small 2 WhisperKitImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i WhisperKitImplementation
 
 # If large model is cached, test that too
-.venv/bin/python3 test_benchmark2.py large 1 WhisperKitImplementation
+.venv/bin/mac-whisper-speedtest -b -m large -n 1 -i WhisperKitImplementation
 ```
 
 #### Step 2.5: Commit
@@ -515,7 +512,7 @@ From `model_details_WhisperKitImplementation.md`:
 ## Testing Checklist
 
 ### Pre-Upgrade Baseline
-- [ ] Record current benchmark: `python test_benchmark2.py small 3 WhisperKitImplementation`
+- [ ] Record current benchmark: `.venv/bin/mac-whisper-speedtest -b -m small -n 3 -i WhisperKitImplementation`
 - [ ] Note exact transcription output for JFK audio
 - [ ] Verify cache location: `ls ~/Documents/huggingface/models/argmaxinc/`
 
@@ -553,13 +550,13 @@ From `model_details_WhisperKitImplementation.md`:
 git checkout -b chore/whisperkit-upgrade-phase1
 # Edit Package.swift: from: "0.14.1"
 cd tools/whisperkit-bridge && swift package update && swift build -c release
-cd ../.. && python test_benchmark2.py small 2 WhisperKitImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i WhisperKitImplementation
 git add . && git commit -m "chore(deps): WhisperKit 0.13.1 → 0.14.1"
 
 # === PHASE 2 ===
 # Edit Package.swift: from: "0.15.0"
 cd tools/whisperkit-bridge && swift package update && swift build -c release
-cd ../.. && python test_benchmark2.py small 2 WhisperKitImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i WhisperKitImplementation
 git add . && git commit -m "chore(deps): WhisperKit 0.14.1 → 0.15.0"
 ```
 

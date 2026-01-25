@@ -36,6 +36,7 @@ The summary should include:
 - **Unfinished work**: notes and next steps on things that didn't get finished 
 - Context that prevents repeating already-completed investigations
 
+A great example of this is: `SESSION_SUMMARY_2026-01-25_MLX_Upgrade_0.30.3.md`
 
 
 ## Commands

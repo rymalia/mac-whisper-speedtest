@@ -386,7 +386,7 @@ git pull origin main
 git checkout -b chore/version-upgrades-2026-01
 
 # 3. Verify current state works
-python test_benchmark.py  # Should pass for all implementations
+.venv/bin/mac-whisper-speedtest -b  # Should pass for all implementations
 ```
 
 #### During Upgrades
@@ -442,8 +442,7 @@ swift package update
 swift build -c release
 
 # 4. Test
-cd ../..
-python test_benchmark2.py small 1 WhisperKitImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 1 -i WhisperKitImplementation
 ```
 
 #### After Completing All Upgrades
@@ -486,7 +485,7 @@ After each upgrade phase, verify:
 
 - [ ] `uv sync` completes without errors
 - [ ] `pytest tests/ -v` passes
-- [ ] `python test_benchmark.py` runs all 9 implementations
+- [ ] `.venv/bin/mac-whisper-speedtest -b` runs all 9 implementations
 - [ ] No new deprecation warnings in output
 - [ ] Model downloads still work (test with fresh cache if needed)
 

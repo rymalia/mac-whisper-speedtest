@@ -283,7 +283,7 @@ cd ../..
 ./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge tests/jfk.wav --format json
 
 # Run Python benchmark
-.venv/bin/python3 test_benchmark2.py small 2 FluidAudioCoreMLImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
 ```
 
 #### Step 1.8: Commit
@@ -395,7 +395,7 @@ swift build -c release
 ./bridge tests/jfk.wav --format json
 
 # 3. Integration test passes
-python test_benchmark2.py small 1 FluidAudioCoreMLImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 1 -i FluidAudioCoreMLImplementation
 ```
 
 **Recommended testing:**
@@ -403,7 +403,7 @@ python test_benchmark2.py small 1 FluidAudioCoreMLImplementation
 # All of the above, plus:
 
 # 4. Multiple runs for consistency
-python test_benchmark2.py small 5 FluidAudioCoreMLImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 5 -i FluidAudioCoreMLImplementation
 
 # 5. Different audio lengths
 ./bridge tests/ted_60.wav --format json
@@ -555,7 +555,7 @@ git branch backup/fluidaudio-v0.1.0
 ## Testing Checklist
 
 ### Pre-Upgrade Baseline
-- [ ] Record current benchmark: `python test_benchmark2.py small 5 FluidAudioCoreMLImplementation`
+- [ ] Record current benchmark: `.venv/bin/mac-whisper-speedtest -b -m small -n 5 -i FluidAudioCoreMLImplementation`
 - [ ] Save output for comparison
 - [ ] Note transcription quality (exact text output)
 
@@ -598,19 +598,19 @@ git checkout -b chore/fluidaudio-upgrade-phase1
 cd tools/fluidaudio-bridge && swift package update
 # Edit main.swift: add version: .v2
 swift build -c release
-cd ../.. && python test_benchmark2.py small 2 FluidAudioCoreMLImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
 git add . && git commit -m "chore(deps): FluidAudio 0.1.0 → 0.4.1"
 
 # === PHASE 2 ===
 # Edit Package.swift: from: "0.8.2"
 cd tools/fluidaudio-bridge && swift package update && swift build -c release
-cd ../.. && python test_benchmark2.py small 2 FluidAudioCoreMLImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
 git add . && git commit -m "chore(deps): FluidAudio 0.4.1 → 0.8.2"
 
 # === PHASE 3 ===
 # Edit Package.swift: from: "0.10.0"
 cd tools/fluidaudio-bridge && swift package update && swift build -c release
-cd ../.. && python test_benchmark2.py small 2 FluidAudioCoreMLImplementation
+.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
 git add . && git commit -m "chore(deps): FluidAudio 0.8.2 → 0.10.0"
 ```
 

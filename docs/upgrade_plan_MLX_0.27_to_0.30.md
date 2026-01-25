@@ -441,10 +441,10 @@ uv sync
 #### Step 1.5: Test All MLX Implementations
 ```bash
 # Test each implementation individually
-.venv/bin/python test_benchmark.py --implementations MLXWhisperImplementation --num-runs 2
+.venv/bin/mac-whisper-speedtest -b -i MLXWhisperImplementation -n 2
 
-# Or use the non-interactive test script
-python test_benchmark.py  # Tests all implementations
+# Or test all implementations (batch mode uses tests/jfk.wav by default)
+.venv/bin/mac-whisper-speedtest -b
 ```
 
 **Focus on these 4 implementations:**
@@ -496,13 +496,13 @@ uv sync
 
 #### Step 2.3: Test All Implementations
 ```bash
-python test_benchmark.py
+.venv/bin/mac-whisper-speedtest -b
 ```
 
 #### Step 2.4: Benchmark Comparison (Optional)
 ```bash
 # Record baseline timing before commit
-python test_benchmark.py > benchmark_mlx_0.30.3.txt
+.venv/bin/mac-whisper-speedtest -b > benchmark_mlx_0.30.3.txt
 
 # Compare with previous results if available
 diff benchmark_mlx_0.29.4.txt benchmark_mlx_0.30.3.txt
@@ -691,7 +691,7 @@ From [GitHub Issues](https://github.com/ml-explore/mlx/issues/2197):
 
 ### Pre-Upgrade Baseline
 
-- [ ] Record current benchmark: `python test_benchmark.py > baseline_mlx_0.27.1.txt`
+- [ ] Record current benchmark: `.venv/bin/mac-whisper-speedtest -b > baseline_mlx_0.27.1.txt`
 - [ ] Note transcription text output for comparison
 - [ ] Verify all 4 MLX implementations work
 
@@ -733,7 +733,7 @@ uv lock --upgrade-package mlx --upgrade-package mlx-metal
 # Verify: mlx should be 0.29.x
 uv sync
 .venv/bin/python -c "import mlx; print(mlx.__version__)"
-python test_benchmark.py
+.venv/bin/mac-whisper-speedtest -b
 git add uv.lock && git commit -m "chore(deps): mlx 0.27.1 → 0.29.4"
 
 # === PHASE 2 ===
@@ -741,7 +741,7 @@ uv lock --upgrade-package mlx --upgrade-package mlx-metal
 # Verify: mlx should be 0.30.3
 uv sync
 .venv/bin/python -c "import mlx; print(mlx.__version__)"
-python test_benchmark.py
+.venv/bin/mac-whisper-speedtest -b
 git add uv.lock && git commit -m "chore(deps): mlx 0.29.4 → 0.30.3"
 ```
 
