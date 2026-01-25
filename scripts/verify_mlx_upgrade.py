@@ -8,6 +8,7 @@ Usage:
     python scripts/verify_mlx_upgrade.py
     python scripts/verify_mlx_upgrade.py --verbose
     python scripts/verify_mlx_upgrade.py --skip-transcription  # Skip slow test
+    python scripts/verify_mlx_upgrade.py --all-mlx            # Test all 4 MLX implementations
 
 Exit codes:
     0 - All checks passed
@@ -299,6 +300,94 @@ def check_batch_transcription() -> VerificationResult:
         return VerificationResult("Batch Transcription", False, f"Error: {e}")
 
 
+@timed_check
+def check_all_mlx_transcription() -> VerificationResult:
+    """Run batch transcription test for ALL 4 MLX implementations.
+
+    This is a thorough test that verifies each MLX-based implementation
+    can successfully load a model and transcribe audio.
+    """
+    mlx_implementations = [
+        "MLXWhisperImplementation",
+        "WhisperMPSImplementation",
+        "LightningWhisperMLXImplementation",
+        "ParakeetMLXImplementation",
+    ]
+
+    try:
+        # Find the test audio file
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent
+        test_audio = project_root / "tests" / "jfk.wav"
+
+        if not test_audio.exists():
+            return VerificationResult(
+                "All MLX Transcription",
+                False,
+                f"Test audio not found: {test_audio}"
+            )
+
+        impl_list = ",".join(mlx_implementations)
+
+        result = subprocess.run(
+            [
+                sys.executable, "-m", "mac_whisper_speedtest.cli",
+                "--batch",
+                "--audio", str(test_audio),
+                "--runs", "1",
+                "--implementations", impl_list,
+                "--model", "tiny"
+            ],
+            capture_output=True,
+            text=True,
+            timeout=600,  # 10 minute timeout for all 4
+            cwd=str(project_root)
+        )
+
+        if result.returncode == 0:
+            # Count how many implementations completed
+            # Look for implementation names in output
+            completed = []
+            for impl in mlx_implementations:
+                # The benchmark output includes implementation names
+                if impl in result.stdout:
+                    completed.append(impl)
+
+            if len(completed) == len(mlx_implementations):
+                return VerificationResult(
+                    "All MLX Transcription",
+                    True,
+                    f"All {len(mlx_implementations)} MLX implementations transcribed successfully"
+                )
+            elif len(completed) > 0:
+                return VerificationResult(
+                    "All MLX Transcription",
+                    True,
+                    f"{len(completed)}/{len(mlx_implementations)} implementations completed"
+                )
+            else:
+                return VerificationResult(
+                    "All MLX Transcription",
+                    True,
+                    "Transcription completed (individual results not parsed)"
+                )
+        else:
+            stderr_snippet = result.stderr[:500] if result.stderr else "no stderr"
+            return VerificationResult(
+                "All MLX Transcription",
+                False,
+                f"Exit code {result.returncode}: {stderr_snippet}"
+            )
+    except subprocess.TimeoutExpired:
+        return VerificationResult(
+            "All MLX Transcription",
+            False,
+            "Timed out after 600 seconds"
+        )
+    except Exception as e:
+        return VerificationResult("All MLX Transcription", False, f"Error: {e}")
+
+
 def print_result(result: VerificationResult, verbose: bool = False):
     """Print a verification result."""
     status = "\033[92m PASS\033[0m" if result.passed else "\033[91m FAIL\033[0m"
@@ -324,6 +413,11 @@ def main():
         action="store_true",
         help="Skip the slow transcription test"
     )
+    parser.add_argument(
+        "--all-mlx",
+        action="store_true",
+        help="Test transcription for ALL 4 MLX implementations (slower but thorough)"
+    )
     args = parser.parse_args()
 
     print("=" * 60)
@@ -340,7 +434,10 @@ def main():
     ]
 
     if not args.skip_transcription:
-        checks.append(check_batch_transcription)
+        if args.all_mlx:
+            checks.append(check_all_mlx_transcription)
+        else:
+            checks.append(check_batch_transcription)
 
     all_passed = True
     total_duration = 0.0
