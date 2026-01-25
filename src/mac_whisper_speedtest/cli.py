@@ -19,6 +19,33 @@ from mac_whisper_speedtest.utils import get_models_dir
 log = structlog.get_logger(__name__)
 app = typer.Typer()
 
+
+def _check_coreml_availability() -> None:
+    """Check if pywhispercpp has CoreML support and log warning if not.
+
+    Only runs on macOS. Logs a helpful message if CoreML is not enabled,
+    directing users to the build guide for 2-3x performance improvement.
+    """
+    import platform
+
+    if platform.system() != "Darwin":
+        return
+
+    try:
+        from pywhispercpp.model import Model
+
+        info = Model.system_info()
+
+        if "COREML = 0" in info:
+            log.warning(
+                "pywhispercpp built without CoreML support. "
+                "For 2-3x speedup with WhisperCppCoreMLImplementation, "
+                "see docs/optimizations_2026-01-13_pywhispercpp_CoreML_Build_Guide.md"
+            )
+    except ImportError:
+        pass  # pywhispercpp not installed
+
+
 # ─────────────────────────────────────────────────────────────
 # Default values for CLI options
 # ─────────────────────────────────────────────────────────────
@@ -183,6 +210,9 @@ def main():
     # Create models directory at startup if it doesn't exist
     models_dir = get_models_dir()
     log.info(f"Models directory: {models_dir}")
+
+    # Check if pywhispercpp has CoreML support and warn if not
+    _check_coreml_availability()
 
     # Run the application
     app()

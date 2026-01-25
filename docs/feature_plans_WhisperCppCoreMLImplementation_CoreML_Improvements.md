@@ -94,10 +94,10 @@ Need to map internal model names to HuggingFace zip filenames:
 **Command**:
 ```bash
 # Small model comparison (all implementations)
-.venv/bin/python3 test_benchmark2.py small 3
+.venv/bin/mac-whisper-speedtest -b -m small -n 3
 
 # Large model comparison (all implementations)
-.venv/bin/python3 test_benchmark2.py large 3
+.venv/bin/mac-whisper-speedtest -b -m large -n 3
 ```
 
 **Expected Results to Document**:
@@ -354,7 +354,7 @@ With CoreML enabled (Apple Silicon):
 mv models/*.mlmodelc models/backup/
 
 # Run benchmark (should trigger auto-download)
-.venv/bin/python3 test_benchmark2.py small 1 "WhisperCppCoreMLImplementation"
+.venv/bin/mac-whisper-speedtest -b -m small -n 1 -i "WhisperCppCoreMLImplementation"
 
 # Verify:
 # 1. Download initiated and completed
@@ -370,7 +370,7 @@ uv pip uninstall pywhispercpp
 uv pip install git+https://github.com/absadiki/pywhispercpp@v1.4.1
 
 # Run benchmark
-.venv/bin/python3 test_benchmark2.py small 1 "WhisperCppCoreMLImplementation"
+.venv/bin/mac-whisper-speedtest -b -m small -n 1 -i "WhisperCppCoreMLImplementation"
 
 # Verify:
 # 1. Warning logged about missing CoreML
@@ -381,8 +381,8 @@ uv pip install git+https://github.com/absadiki/pywhispercpp@v1.4.1
 ### Phase 3: Comprehensive Benchmark
 ```bash
 # Run full comparison
-.venv/bin/python3 test_benchmark2.py small 3
-.venv/bin/python3 test_benchmark2.py large 3
+.venv/bin/mac-whisper-speedtest -b -m small -n 3
+.venv/bin/mac-whisper-speedtest -b -m large -n 3
 
 # Verify:
 # 1. All implementations complete successfully
