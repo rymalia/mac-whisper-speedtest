@@ -29,7 +29,7 @@ dependencies = [
 
 
 [tool.uv.sources]
-pywhispercpp = { git = "https://github.com/absadiki/pywhispercpp" }
+pywhispercpp = { git = "https://github.com/absadiki/pywhispercpp", tag = "v1.4.1" }
 
 [project.scripts]
 mac-whisper-speedtest = "mac_whisper_speedtest.cli:main"

@@ -136,6 +136,26 @@ cd tools/whisperkit-bridge && swift build -c release && cd ../..
 cd tools/fluidaudio-bridge && swift build -c release && cd ../..
 ```
 
+### Optional: CoreML Acceleration for whisper.cpp
+
+The default installation builds pywhispercpp **without** CoreML support (uses Metal GPU fallback). For 2-3x faster transcription with `WhisperCppCoreMLImplementation`, rebuild with CoreML enabled:
+
+```bash
+# Uninstall and clear cache
+uv pip uninstall pywhispercpp
+uv cache clean pywhispercpp
+
+# Reinstall with CoreML support
+WHISPER_COREML=ON WHISPER_COREML_ALLOW_FALLBACK=ON \
+  uv pip install --no-cache git+https://github.com/absadiki/pywhispercpp@v1.4.1
+```
+
+**Performance gains** (Apple M3, 11-second audio):
+- Small model: **1.87x faster** (0.50s vs 0.93s)
+- Large model: **2.82x faster** (1.15s vs 3.25s)
+
+For detailed build instructions and troubleshooting, see [pywhispercpp CoreML Build Guide](docs/optimizations_2026-01-13_pywhispercpp_CoreML_Build_Guide.md).
+
 ## Usage
 
 ### Interactive Mode (Microphone Recording)
