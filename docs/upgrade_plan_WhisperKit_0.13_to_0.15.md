@@ -1,6 +1,7 @@
 # WhisperKit Upgrade Plan: v0.13.1 → v0.15.0
 
 **Created:** 2026-01-14
+**Updated:** 2026-01-25 (added automated test suite)
 **Purpose:** Phased upgrade strategy for WhisperKit Swift dependency with discrete commits
 
 ---
@@ -8,14 +9,15 @@
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
-2. [Current State Analysis](#current-state-analysis)
-3. [Version History & Breaking Changes](#version-history--breaking-changes)
-4. [Phased Upgrade Strategy](#phased-upgrade-strategy)
-5. [Implementation Details](#implementation-details)
-6. [Coordinated Dependencies](#coordinated-dependencies)
-7. [Git Workflow & Commit Strategy](#git-workflow--commit-strategy)
-8. [Risk Mitigation](#risk-mitigation)
-9. [Testing Checklist](#testing-checklist)
+2. [Automated Test Suite](#automated-test-suite)
+3. [Current State Analysis](#current-state-analysis)
+4. [Version History & Breaking Changes](#version-history--breaking-changes)
+5. [Phased Upgrade Strategy](#phased-upgrade-strategy)
+6. [Implementation Details](#implementation-details)
+7. [Coordinated Dependencies](#coordinated-dependencies)
+8. [Git Workflow & Commit Strategy](#git-workflow--commit-strategy)
+9. [Risk Mitigation](#risk-mitigation)
+10. [Testing Checklist](#testing-checklist)
 
 ---
 
@@ -45,6 +47,64 @@ Unlike FluidAudio (9 versions, major API changes), WhisperKit's upgrade is **rel
 1. The swift-transformers major version jump (0.1.15 → 1.0+) is significant
 2. Phase 1 validates the HubApi download behavior still works
 3. Each phase has a stable checkpoint for rollback
+
+---
+
+## Automated Test Suite
+
+### Test Files
+
+Run these tests **before** and **after** each upgrade phase:
+
+| Test File | Purpose | Run Time |
+|-----------|---------|----------|
+| `tests/test_whisperkit_health.py` | Bridge existence, JSON schema, version checks | ~10s |
+| `tests/test_whisperkit_transcription.py` | Actual transcription smoke tests | ~60s |
+
+### Quick Commands
+
+```bash
+# Run all WhisperKit tests (before/after each phase)
+pytest tests/test_whisperkit_health.py tests/test_whisperkit_transcription.py -v
+
+# Health checks only (fast)
+pytest tests/test_whisperkit_health.py -v
+
+# Transcription smoke tests only
+pytest tests/test_whisperkit_transcription.py -v
+
+# Single test class
+pytest tests/test_whisperkit_health.py::TestPackageVersions -v
+```
+
+### What the Tests Verify
+
+**Health Checks (`test_whisperkit_health.py`):**
+- Bridge executable exists and runs
+- JSON output has required fields (text, transcription_time, language, segments)
+- Segment structure is correct (start, end, text)
+- Package.resolved versions are in expected ranges
+- Python implementation imports and instantiates
+
+**Transcription Tests (`test_whisperkit_transcription.py`):**
+- Bridge CLI produces non-empty transcription
+- Transcription contains expected JFK speech words
+- Different model sizes (tiny, base, small) all work
+- Python implementation wrapper works correctly
+- JSON schema consistency across upgrades
+
+### Baseline Recording
+
+Before starting the upgrade, save baseline outputs for comparison:
+
+```bash
+# Save JSON baseline
+./tools/whisperkit-bridge/.build/release/whisperkit-bridge tests/jfk.wav \
+    --model small --format json > docs/whisperkit_baseline_0.13.1.json
+
+# Save Package.resolved snapshot
+cp tools/whisperkit-bridge/Package.resolved docs/whisperkit_package_resolved_0.13.1.json
+```
 
 ---
 
@@ -512,32 +572,92 @@ From `model_details_WhisperKitImplementation.md`:
 ## Testing Checklist
 
 ### Pre-Upgrade Baseline
-- [ ] Record current benchmark: `.venv/bin/mac-whisper-speedtest -b -m small -n 3 -i WhisperKitImplementation`
-- [ ] Note exact transcription output for JFK audio
-- [ ] Verify cache location: `ls ~/Documents/huggingface/models/argmaxinc/`
+
+```bash
+# 1. Run automated health checks (establishes baseline)
+pytest tests/test_whisperkit_health.py -v
+
+# 2. Run transcription smoke tests
+pytest tests/test_whisperkit_transcription.py -v
+
+# 3. Save JSON baseline for schema comparison
+./tools/whisperkit-bridge/.build/release/whisperkit-bridge tests/jfk.wav \
+    --model small --format json > docs/whisperkit_baseline_0.13.1.json
+
+# 4. Record Package.resolved versions
+cat tools/whisperkit-bridge/Package.resolved | grep -E '"identity"|"version"'
+
+# 5. Record benchmark timing (save output for comparison)
+.venv/bin/mac-whisper-speedtest -b -m small -n 3 -i WhisperKitImplementation
+```
+
+- [ ] All pytest tests pass
+- [ ] Baseline JSON saved
+- [ ] Package.resolved versions recorded (WhisperKit 0.13.1, swift-transformers 0.1.15)
+- [ ] Benchmark timing recorded
 
 ### Phase 1 Verification
+
+```bash
+# 1. Run automated tests
+pytest tests/test_whisperkit_health.py tests/test_whisperkit_transcription.py -v
+
+# 2. Verify Package.resolved versions changed correctly
+cat tools/whisperkit-bridge/Package.resolved | grep -E '"identity"|"version"'
+# Expected: whisperkit 0.14.x, swift-transformers 1.0.x or higher
+```
+
+- [ ] `pytest tests/test_whisperkit_health.py -v` — all tests pass
+- [ ] `pytest tests/test_whisperkit_transcription.py -v` — all tests pass
+- [ ] WhisperKit version in Package.resolved is 0.14.x
+- [ ] swift-transformers version is 1.0.x or higher (major version jump!)
 - [ ] Swift build completes without errors
 - [ ] No new compiler warnings (or document them)
-- [ ] Bridge --help works
-- [ ] JFK transcription matches baseline exactly
-- [ ] `transcription_time` field still present in JSON output
-- [ ] `segments` array still present in JSON output
-- [ ] Cache location unchanged
-- [ ] Python benchmark completes successfully
+- [ ] Cache location unchanged (`~/Documents/huggingface/models/argmaxinc/`)
 
 ### Phase 2 Verification
+
+```bash
+# 1. Run automated tests
+pytest tests/test_whisperkit_health.py tests/test_whisperkit_transcription.py -v
+
+# 2. Verify Package.resolved versions
+cat tools/whisperkit-bridge/Package.resolved | grep -E '"identity"|"version"'
+# Expected: whisperkit 0.15.x, swift-transformers 1.1.x
+```
+
 - [ ] All Phase 1 checks pass
-- [ ] `results.first?.timings.fullPipeline` still works
-- [ ] `results.map { $0.text }` still works
-- [ ] Segment timestamps still accurate
-- [ ] No reference/mutation issues (should be N/A for our code)
+- [ ] WhisperKit version in Package.resolved is 0.15.x
+- [ ] swift-transformers version is 1.1.x
+- [ ] `results.first?.timings.fullPipeline` still works (verified by tests)
+- [ ] `results.map { $0.text }` still works (verified by tests)
+- [ ] Segment timestamps still accurate (verified by `test_segment_timestamps_are_ordered`)
 
 ### Post-Upgrade Validation
-- [ ] Compare benchmark times to baseline (should be similar)
-- [ ] Compare transcription text (should be identical)
-- [ ] Test with longer audio (ted_60.wav if available)
-- [ ] Document any behavior changes
+
+```bash
+# 1. Generate post-upgrade JSON for comparison
+./tools/whisperkit-bridge/.build/release/whisperkit-bridge tests/jfk.wav \
+    --model small --format json > docs/whisperkit_post_upgrade_0.15.0.json
+
+# 2. Compare JSON structure (keys should match)
+diff <(jq 'keys' docs/whisperkit_baseline_0.13.1.json) \
+     <(jq 'keys' docs/whisperkit_post_upgrade_0.15.0.json)
+
+# 3. Compare segment structure
+diff <(jq '.segments[0] | keys' docs/whisperkit_baseline_0.13.1.json) \
+     <(jq '.segments[0] | keys' docs/whisperkit_post_upgrade_0.15.0.json)
+
+# 4. Run benchmark and compare timing
+.venv/bin/mac-whisper-speedtest -b -m small -n 3 -i WhisperKitImplementation
+```
+
+- [ ] JSON schema unchanged (same keys in output)
+- [ ] Segment schema unchanged (start, end, text)
+- [ ] Benchmark timing within ±20% of baseline (acceptable variance)
+- [ ] Transcription text quality similar (may have minor differences)
+- [ ] Test with longer audio if available: `tests/ted_60.wav`
+- [ ] Document any behavior changes in commit message
 
 ---
 
@@ -546,27 +666,45 @@ From `model_details_WhisperKitImplementation.md`:
 ### Quick Reference: Upgrade Commands
 
 ```bash
+# === PRE-UPGRADE BASELINE ===
+pytest tests/test_whisperkit_health.py tests/test_whisperkit_transcription.py -v
+./tools/whisperkit-bridge/.build/release/whisperkit-bridge tests/jfk.wav \
+    --model small --format json > docs/whisperkit_baseline_0.13.1.json
+
 # === PHASE 1 ===
-git checkout -b chore/whisperkit-upgrade-phase1
 # Edit Package.swift: from: "0.14.1"
 cd tools/whisperkit-bridge && swift package update && swift build -c release
-.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i WhisperKitImplementation
-git add . && git commit -m "chore(deps): WhisperKit 0.13.1 → 0.14.1"
+cd ../..
+pytest tests/test_whisperkit_health.py tests/test_whisperkit_transcription.py -v
+# Verify: swift-transformers should be 1.0.x or higher
+cat tools/whisperkit-bridge/Package.resolved | grep swift-transformers -A2
+# User commits after verification
 
 # === PHASE 2 ===
 # Edit Package.swift: from: "0.15.0"
 cd tools/whisperkit-bridge && swift package update && swift build -c release
-.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i WhisperKitImplementation
-git add . && git commit -m "chore(deps): WhisperKit 0.14.1 → 0.15.0"
+cd ../..
+pytest tests/test_whisperkit_health.py tests/test_whisperkit_transcription.py -v
+# Verify: swift-transformers should be 1.1.x
+cat tools/whisperkit-bridge/Package.resolved | grep swift-transformers -A2
+# User commits after verification
+
+# === POST-UPGRADE VALIDATION ===
+./tools/whisperkit-bridge/.build/release/whisperkit-bridge tests/jfk.wav \
+    --model small --format json > docs/whisperkit_post_upgrade_0.15.0.json
+diff <(jq 'keys' docs/whisperkit_baseline_0.13.1.json) \
+     <(jq 'keys' docs/whisperkit_post_upgrade_0.15.0.json)
 ```
 
 ### Key Takeaways
 
-1. **Lower risk than FluidAudio** — Only 2 versions, our code pattern unaffected
-2. **Real upgrade is swift-transformers** — 0.1.15 → 1.1.2 is the major change
-3. **TranscriptionResult change is safe for us** — Read-only access works for both struct and class
-4. **Verify download behavior** — The HubApi is in swift-transformers, confirm it still works
-5. **Keep phases discrete** — Easy rollback if issues arise
+1. **Run tests before AND after each phase** — Catches regressions automatically
+2. **Lower risk than FluidAudio** — Only 2 versions, our code pattern unaffected
+3. **Real upgrade is swift-transformers** — 0.1.15 → 1.1.2 is the major change
+4. **TranscriptionResult change is safe for us** — Read-only access works for both struct and class
+5. **Verify download behavior** — The HubApi is in swift-transformers, confirm it still works
+6. **Timing variance of ±20% is acceptable** — Don't fail upgrade for minor timing differences
+7. **Keep phases discrete** — Easy rollback if issues arise
 
 ### Comparison: WhisperKit vs FluidAudio Upgrades
 
