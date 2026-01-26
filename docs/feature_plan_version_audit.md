@@ -1,7 +1,7 @@
 # Version Audit Report
 
 **Generated:** 2026-01-14
-**Updated:** 2026-01-25 (marked completed upgrades)
+**Updated:** 2026-01-26 (huggingface-hub, transformers ecosystem upgrades)
 **Purpose:** Comprehensive audit of all packages, Swift bridges, and dependencies with upgrade prioritization
 
 ---
@@ -28,7 +28,8 @@
 | **Swift: FluidAudio** | ~~0.1.0~~ 0.10.0 | 0.10.0 | — | ~~CRITICAL~~ | ✅ **DONE** (2026-01-25) |
 | **Swift: WhisperKit** | ~~0.13.1~~ 0.15.0 | 0.15.0 | — | ~~HIGH~~ | ✅ **DONE** (2026-01-25) |
 | **Python: MLX** | ~~0.27.1~~ 0.30.3 | 0.30.3 | — | ~~HIGH~~ | ✅ **DONE** (2026-01-25) |
-| **Python: transformers** | 4.51.3 | 4.57.5 | 6 patch versions | MEDIUM | 🔲 Pending |
+| **Python: huggingface-hub** | ~~0.30.2~~ 1.3.4 | 1.3.4 | — | ~~HIGH~~ | ✅ **DONE** (2026-01-26) |
+| **Python: transformers** | ~~4.51.3~~ 5.0.0 | 5.0.0 | — | ~~MEDIUM~~ | ✅ **DONE** (2026-01-26) |
 | **Python: torch** | 2.6.0 | 2.9.1 | 3 minor versions | MEDIUM | 🔲 Pending |
 | **Python: faster-whisper** | 1.1.1 | 1.2.1 | 1 minor version | MEDIUM | 🔲 Pending |
 | **Python: parakeet-mlx** | 0.3.5 | 0.5.0 | 2 minor versions | MEDIUM | 🔲 Pending |
@@ -48,6 +49,8 @@ Detailed upgrade plans with step-by-step instructions:
 |---------|----------|------|--------|--------|
 | FluidAudio 0.1→0.10 | [upgrade_plan_FluidAudio_0.1_to_0.10.md](upgrade_plan_FluidAudio_0.1_to_0.10.md) | HIGH | 3 | ✅ **DONE** |
 | WhisperKit 0.13→0.15 | [upgrade_plan_WhisperKit_0.13_to_0.15.md](upgrade_plan_WhisperKit_0.13_to_0.15.md) | MEDIUM | 2 | ✅ **DONE** |
+| huggingface-hub 0.30→1.3 | [upgrade_plan_huggingface-hub_0.30_to_1.3.md](upgrade_plan_huggingface-hub_0.30_to_1.3.md) | MEDIUM | 4 | ✅ **DONE** |
+| HuggingFace Ecosystem | [upgrade_plan_HuggingFace_Ecosystem.md](upgrade_plan_HuggingFace_Ecosystem.md) | MEDIUM | 5 | ✅ **DONE** |
 | MLX 0.27→0.30 | [upgrade_plan_MLX_0.27_to_0.30.md](upgrade_plan_MLX_0.27_to_0.30.md) | LOW-MEDIUM | 2 | ✅ **DONE** |
 
 ### Hidden Native Code Warning

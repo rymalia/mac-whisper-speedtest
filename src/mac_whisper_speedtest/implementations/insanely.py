@@ -120,23 +120,33 @@ class InsanelyFastWhisperImplementation(WhisperImplementation):
             model_kwargs["low_cpu_mem_usage"] = True  # Optimize for unified memory architecture
 
         # Configure quantization if available and enabled
+        # Note: BitsAndBytesConfig requires the bitsandbytes package (CUDA only, not MPS)
+        # Skip quantization on macOS/MPS since bitsandbytes doesn't support Apple Silicon
         if self.quantization == "4bit" and BitsAndBytesConfig is not None:
-            try:
-                quantization_config = BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_compute_dtype=torch.float16,
-                    bnb_4bit_use_double_quant=True,
-                    bnb_4bit_quant_type="nf4"
-                )
-                model_kwargs["quantization_config"] = quantization_config
-                self.log.info("Using 4-bit quantization with BitsAndBytesConfig")
-            except Exception as e:
-                self.log.warning(f"Failed to configure 4-bit quantization: {e}")
+            if platform.system() == "Darwin" and self.device_id == "mps":
+                self.log.info("Skipping 4-bit quantization on Apple Silicon (bitsandbytes requires CUDA)")
+            else:
+                try:
+                    # Check if bitsandbytes is actually installed (required by transformers 5.0+)
+                    import importlib.util
+                    if importlib.util.find_spec("bitsandbytes") is not None:
+                        quantization_config = BitsAndBytesConfig(
+                            load_in_4bit=True,
+                            bnb_4bit_compute_dtype=torch.float16,
+                            bnb_4bit_use_double_quant=True,
+                            bnb_4bit_quant_type="nf4"
+                        )
+                        model_kwargs["quantization_config"] = quantization_config
+                        self.log.info("Using 4-bit quantization with BitsAndBytesConfig")
+                    else:
+                        self.log.info("bitsandbytes not installed, skipping 4-bit quantization")
+                except Exception as e:
+                    self.log.warning(f"Failed to configure 4-bit quantization: {e}")
 
         self._model = pipeline(
             "automatic-speech-recognition",
             model=self.model_name,
-            torch_dtype=torch.float16,
+            dtype=torch.float16,  # Changed from torch_dtype (deprecated in transformers 5.0)
             device=self.device_id,
             model_kwargs=model_kwargs,
         )
