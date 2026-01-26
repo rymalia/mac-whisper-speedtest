@@ -1,6 +1,7 @@
 # Version Audit Report
 
 **Generated:** 2026-01-14
+**Updated:** 2026-01-25 (marked completed upgrades)
 **Purpose:** Comprehensive audit of all packages, Swift bridges, and dependencies with upgrade prioritization
 
 ---
@@ -22,15 +23,15 @@
 
 ### Key Findings
 
-| Category | Current | Latest | Gap | Urgency | Notes |
-|----------|---------|--------|-----|---------|-------|
-| **Swift: FluidAudio** | 0.1.0 | 0.10.0 | 9 minor versions | **CRITICAL** | API changes required (add `.v2`) |
-| **Swift: WhisperKit** | 0.13.1 | 0.15.0 | 2 minor versions | **HIGH** | No code changes expected |
-| **Python: MLX** | 0.27.1 | 0.30.3 | 3 minor versions | HIGH | Performance only, no API changes |
-| **Python: transformers** | 4.51.3 | 4.57.5 | 6 patch versions | MEDIUM | |
-| **Python: torch** | 2.6.0 | 2.9.1 | 3 minor versions | MEDIUM | |
-| **Python: faster-whisper** | 1.1.1 | 1.2.1 | 1 minor version | MEDIUM | |
-| **Python: parakeet-mlx** | 0.3.5 | 0.5.0 | 2 minor versions | MEDIUM | |
+| Category | Current | Latest | Gap | Urgency | Status |
+|----------|---------|--------|-----|---------|--------|
+| **Swift: FluidAudio** | ~~0.1.0~~ 0.10.0 | 0.10.0 | — | ~~CRITICAL~~ | ✅ **DONE** (2026-01-25) |
+| **Swift: WhisperKit** | ~~0.13.1~~ 0.15.0 | 0.15.0 | — | ~~HIGH~~ | ✅ **DONE** (2026-01-25) |
+| **Python: MLX** | ~~0.27.1~~ 0.30.3 | 0.30.3 | — | ~~HIGH~~ | ✅ **DONE** (2026-01-25) |
+| **Python: transformers** | 4.51.3 | 4.57.5 | 6 patch versions | MEDIUM | 🔲 Pending |
+| **Python: torch** | 2.6.0 | 2.9.1 | 3 minor versions | MEDIUM | 🔲 Pending |
+| **Python: faster-whisper** | 1.1.1 | 1.2.1 | 1 minor version | MEDIUM | 🔲 Pending |
+| **Python: parakeet-mlx** | 0.3.5 | 0.5.0 | 2 minor versions | MEDIUM | 🔲 Pending |
 
 ### Risk Assessment
 
@@ -43,11 +44,11 @@
 
 Detailed upgrade plans with step-by-step instructions:
 
-| Upgrade | Document | Risk | Phases |
-|---------|----------|------|--------|
-| FluidAudio 0.1→0.10 | [upgrade_plan_FluidAudio_0.1_to_0.10.md](upgrade_plan_FluidAudio_0.1_to_0.10.md) | HIGH (API changes required) | 3 |
-| WhisperKit 0.13→0.15 | [upgrade_plan_WhisperKit_0.13_to_0.15.md](upgrade_plan_WhisperKit_0.13_to_0.15.md) | MEDIUM (no code changes expected) | 2 |
-| MLX 0.27→0.30 | [upgrade_plan_MLX_0.27_to_0.30.md](upgrade_plan_MLX_0.27_to_0.30.md) | LOW-MEDIUM (performance only) | 2 |
+| Upgrade | Document | Risk | Phases | Status |
+|---------|----------|------|--------|--------|
+| FluidAudio 0.1→0.10 | [upgrade_plan_FluidAudio_0.1_to_0.10.md](upgrade_plan_FluidAudio_0.1_to_0.10.md) | HIGH | 3 | ✅ **DONE** |
+| WhisperKit 0.13→0.15 | [upgrade_plan_WhisperKit_0.13_to_0.15.md](upgrade_plan_WhisperKit_0.13_to_0.15.md) | MEDIUM | 2 | ✅ **DONE** |
+| MLX 0.27→0.30 | [upgrade_plan_MLX_0.27_to_0.30.md](upgrade_plan_MLX_0.27_to_0.30.md) | LOW-MEDIUM | 2 | ✅ **DONE** |
 
 ### Hidden Native Code Warning
 
@@ -67,9 +68,10 @@ Detailed upgrade plans with step-by-step instructions:
 
 ### Direct Dependencies (from pyproject.toml)
 
-| Package | Declared Version | Locked Version | Latest Available | Update Needed? |
-|---------|-----------------|----------------|------------------|----------------|
-| `mlx` | >=0.5.0 | 0.27.1 | 0.30.3 | YES |
+| Package | Declared Version | Locked Version | Latest Available | Status |
+|---------|-----------------|----------------|------------------|--------|
+| `mlx` | ==0.30.3 | **0.30.3** | 0.30.3 | ✅ **DONE** |
+| `mlx-metal` | ==0.30.3 | **0.30.3** | 0.30.3 | ✅ **DONE** |
 | `mlx-whisper` | >=0.4.2 | 0.4.2 | 0.4.3 | YES |
 | `faster-whisper` | >=1.1.1 | 1.1.1 | 1.2.1 | YES |
 | `parakeet-mlx` | >=0.3.5 | 0.3.5 | 0.5.0 | YES |
@@ -271,42 +273,30 @@ These packages are not directly declared but critically affect functionality:
 
 ## Prioritized Upgrade Recommendations
 
-### Priority 1: CRITICAL (Do First)
+### Priority 1: CRITICAL (Do First) — ✅ COMPLETED
 
-#### 1.1 FluidAudio Swift Bridge
-- **Current:** 0.1.0 → **Target:** 0.10.0
-- **Why Critical:** 9 versions behind, extensive new features including Sortformer speaker diarization
-- **Complications:**
-  - Major API changes likely
-  - May require bridge code rewrite
-  - Swift 6 migration may affect build process
-- **Effort:** Medium-High (1-2 hours code review, testing)
+#### 1.1 FluidAudio Swift Bridge — ✅ DONE (2026-01-25)
+- **Current:** ~~0.1.0~~ **0.10.0** → **Target:** 0.10.0
+- **Result:** Upgraded successfully with API changes to ASRConfig/TdtConfig
+- **Performance:** 4.6x faster transcription
+- **Commit:** `62637f5 chore(deps): bump FluidAudio 0.1.0 → 0.10.0`
 
-#### 1.2 MLX Core Update
-- **Current:** 0.27.1 → **Target:** 0.30.3
-- **Why Critical:** Performance improvements for Apple Silicon, M5 support preparation
-- **Complications:**
-  - Affects exactly 4 implementations: MLXWhisperImplementation, WhisperMPSImplementation, LightningWhisperMLXImplementation, ParakeetMLXImplementation
-  - **Must be done atomically with mlx-metal** (see warning below)
-- **Effort:** Low (version bump, full test suite)
+#### 1.2 MLX Core Update — ✅ DONE (2026-01-25)
+- **Current:** ~~0.27.1~~ **0.30.3** → **Target:** 0.30.3
+- **Result:** Upgraded in 2 phases (0.29.4 then 0.30.3) with all 4 MLX implementations verified
+- **Commits:** `24fad7a` (Phase 1), `4e1c24e` (Phase 2)
 
-> **⚠️ CRITICAL:** `mlx` and `mlx-metal` MUST always have the same version. Never upgrade one without the other.
-> ```bash
-> # ALWAYS upgrade both together:
-> uv lock --upgrade-package mlx --upgrade-package mlx-metal
-> ```
+> **⚠️ REMINDER:** `mlx` and `mlx-metal` MUST always have the same version. Currently pinned to 0.30.3 in pyproject.toml.
 
-### Priority 2: HIGH (Do Soon)
+### Priority 2: HIGH (Do Soon) — PARTIALLY COMPLETED
 
-#### 2.1 WhisperKit Swift Bridge
-- **Current:** 0.13.1 → **Target:** 0.15.0
-- **Why High:** TranscriptionResult API change (struct→class), dependency updates
-- **Complications:**
-  - Need to verify bridge code handles the class change
-  - swift-transformers major version jump
-- **Effort:** Medium (test bridge behavior, possible code changes)
+#### 2.1 WhisperKit Swift Bridge — ✅ DONE (2026-01-25)
+- **Current:** ~~0.13.1~~ **0.15.0** → **Target:** 0.15.0
+- **Result:** Upgraded successfully; struct→class change had no impact (read-only access)
+- **Bonus:** swift-transformers upgraded 0.1.15 → 1.1.6 automatically
+- **Commit:** `25452b5 chore(deps): bump WhisperKit 0.13.1 → 0.15.0`
 
-#### 2.2 coremltools Major Update
+#### 2.2 coremltools Major Update — 🔲 PENDING
 - **Current:** 8.3.0 → **Target:** 9.0
 - **Why High:** Major version with significant CoreML improvements
 - **Complications:**
@@ -314,7 +304,7 @@ These packages are not directly declared but critically affect functionality:
   - Affects pywhispercpp CoreML model conversion
 - **Effort:** Medium (test CoreML model loading/conversion)
 
-#### 2.3 huggingface-hub Major Update
+#### 2.3 huggingface-hub Major Update — 🔲 PENDING
 - **Current:** 0.30.2 → **Target:** 1.3.1
 - **Why High:** Major version jump, affects all HuggingFace model downloads
 - **Complications:**
