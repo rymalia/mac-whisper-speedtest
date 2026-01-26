@@ -28,22 +28,19 @@ struct FluidAudioBridge: AsyncParsableCommand {
         do {
             // Load audio file
             let audioData = try loadAudioFile(url: inputURL)
-            
-            // Initialize ASR
-            let asrConfig = ASRConfig(
-                maxSymbolsPerFrame: 3,
-                realtimeMode: false,
-                chunkSizeMs: 1500,
-                tdtConfig: TdtConfig(
-                    durations: [0, 1, 2, 3, 4],
-                    maxSymbolsPerStep: 3
-                )
-            )
-            
+
+            // Initialize ASR with default config
+            // Note: ASRConfig API changed significantly in FluidAudio 0.10.0
+            // Old API had: maxSymbolsPerFrame, realtimeMode, chunkSizeMs, tdtConfig
+            // New API has: sampleRate, tdtConfig (with different TdtConfig params)
+            // Using defaults for compatibility
+            let asrConfig = ASRConfig.default
+
             let asrManager = AsrManager(config: asrConfig)
-            
-            // Load models
-            let models = try await AsrModels.downloadAndLoad()
+
+            // Load models - explicitly specify v2 to maintain compatibility
+            // Note: FluidAudio 0.4.0+ defaults to v3, we want v2 for consistency
+            let models = try await AsrModels.downloadAndLoad(version: .v2)
             try await asrManager.initialize(models: models)
             
             // Transcribe (measure only the actual transcription time)

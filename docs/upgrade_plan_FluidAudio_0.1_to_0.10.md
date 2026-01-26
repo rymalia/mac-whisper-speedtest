@@ -1,6 +1,7 @@
 # FluidAudio Upgrade Plan: v0.1.0 → v0.10.0
 
 **Created:** 2026-01-14
+**Updated:** 2026-01-25 (added automated test suite, fixed documentation)
 **Purpose:** Phased upgrade strategy for FluidAudio Swift dependency with discrete commits
 
 ---
@@ -8,14 +9,15 @@
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
-2. [Current State Analysis](#current-state-analysis)
-3. [Version History & Breaking Changes](#version-history--breaking-changes)
-4. [Phased Upgrade Strategy](#phased-upgrade-strategy)
-5. [Implementation Details](#implementation-details)
-6. [Best Practices for Coordinated Updates](#best-practices-for-coordinated-updates)
-7. [Git Workflow & Commit Strategy](#git-workflow--commit-strategy)
-8. [Risk Mitigation](#risk-mitigation)
-9. [Testing Checklist](#testing-checklist)
+2. [Automated Test Suite](#automated-test-suite)
+3. [Current State Analysis](#current-state-analysis)
+4. [Version History & Breaking Changes](#version-history--breaking-changes)
+5. [Phased Upgrade Strategy](#phased-upgrade-strategy)
+6. [Implementation Details](#implementation-details)
+7. [Best Practices for Coordinated Updates](#best-practices-for-coordinated-updates)
+8. [Git Workflow & Commit Strategy](#git-workflow--commit-strategy)
+9. [Risk Mitigation](#risk-mitigation)
+10. [Testing Checklist](#testing-checklist)
 
 ---
 
@@ -42,6 +44,85 @@ Rather than jumping 9 versions at once, we'll upgrade in 3 phases at natural arc
 3. API changes compound—incremental upgrades let you adapt gradually
 4. Git history shows clear progression
 
+> **Note on SPM Behavior:** Swift Package Manager's `from: "0.4.1"` means "0.4.1 or higher",
+> so it will resolve to the latest compatible version. During the WhisperKit upgrade, this
+> caused both phases to complete in one step. To force specific intermediate versions,
+> use `exact: "0.4.1"` constraint instead.
+
+---
+
+## Automated Test Suite
+
+### Test Files
+
+Run these tests **before** and **after** each upgrade phase:
+
+| Test File | Purpose | Run Time |
+|-----------|---------|----------|
+| `tests/test_fluidaudio_health.py` | Bridge existence, JSON schema, version checks | ~5s |
+| `tests/test_fluidaudio_transcription.py` | Actual transcription smoke tests | ~60s |
+| `scripts/verify_fluidaudio_upgrade.py` | Quick CLI verification script | ~10s |
+
+### Quick Commands
+
+```bash
+# Run all FluidAudio tests (before/after each phase)
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+
+# Health checks only (fast)
+pytest tests/test_fluidaudio_health.py -v
+
+# Transcription smoke tests only
+pytest tests/test_fluidaudio_transcription.py -v
+
+# Quick verification script (alternative to pytest)
+python scripts/verify_fluidaudio_upgrade.py
+python scripts/verify_fluidaudio_upgrade.py --verbose
+python scripts/verify_fluidaudio_upgrade.py --skip-transcription  # Fast mode
+```
+
+### What the Tests Verify
+
+**Health Checks (`test_fluidaudio_health.py`):**
+- Bridge executable exists and runs
+- JSON output has required fields (text, transcription_time, processing_time, language)
+- Package.resolved versions are in expected ranges (0.1.x → 0.4.x → 0.8.x → 0.10.x)
+- Python implementation imports and instantiates correctly
+
+**Transcription Tests (`test_fluidaudio_transcription.py`):**
+- Bridge CLI produces non-empty transcription
+- Transcription contains expected JFK speech words ("ask", "country", "fellow")
+- JSON schema consistency across upgrades
+- Python implementation wrapper works correctly
+
+### JSON Output Schema
+
+FluidAudio's JSON schema differs from WhisperKit:
+
+```json
+{
+    "text": "transcription text...",
+    "transcription_time": 0.5,
+    "processing_time": 0.3,
+    "language": "en"
+}
+```
+
+**Note:** FluidAudio does **NOT** provide a `segments` array (unlike WhisperKit).
+
+### Baseline Recording
+
+Before starting the upgrade, save baseline outputs for comparison:
+
+```bash
+# Save JSON baseline
+./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge tests/jfk.wav \
+    --format json > docs/fluidaudio_baseline_0.1.0.json
+
+# Save Package.resolved snapshot
+cp tools/fluidaudio-bridge/Package.resolved docs/fluidaudio_package_resolved_0.1.0.json
+```
+
 ---
 
 ## Current State Analysis
@@ -50,11 +131,14 @@ Rather than jumping 9 versions at once, we'll upgrade in 3 phases at natural arc
 
 ```
 tools/fluidaudio-bridge/
-├── Package.swift          # Declares FluidAudio dependency
+├── Package.swift          # Declares FluidAudio dependency (from: "0.0.3")
 ├── Package.resolved       # Locks to v0.1.0
 └── Sources/fluidaudio-bridge/
     └── main.swift         # ~110 lines, simple CLI
 ```
+
+> **Note:** Package.swift declares `from: "0.0.3"` but Package.resolved locks to v0.1.0.
+> This is normal - SPM resolved to the latest compatible version at build time.
 
 ### Current API Usage (v0.1.0)
 
@@ -231,7 +315,7 @@ let result = try await asrManager.transcribe(inputURL, source: .system)
 
 #### Step 1.1: Create Upgrade Branch
 ```bash
-cd /Users/rymalia/projects/mac-whisper-speedtest_MAIN
+cd /Users/rymalia/projects/mac-whisper-speedtest
 git checkout main
 git pull origin main
 git checkout -b chore/fluidaudio-upgrade-phase1
@@ -244,6 +328,9 @@ git checkout -b chore/fluidaudio-upgrade-phase1
 .package(url: "https://github.com/FluidInference/FluidAudio.git", from: "0.0.3"),
 // To:
 .package(url: "https://github.com/FluidInference/FluidAudio.git", from: "0.4.1"),
+
+// NOTE: If you want to force exact version 0.4.1 (not latest), use:
+// .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.4.1"),
 ```
 
 #### Step 1.3: Resolve & Update
@@ -555,35 +642,106 @@ git branch backup/fluidaudio-v0.1.0
 ## Testing Checklist
 
 ### Pre-Upgrade Baseline
-- [ ] Record current benchmark: `.venv/bin/mac-whisper-speedtest -b -m small -n 5 -i FluidAudioCoreMLImplementation`
-- [ ] Save output for comparison
-- [ ] Note transcription quality (exact text output)
+
+```bash
+# 1. Run automated health checks (establishes baseline)
+pytest tests/test_fluidaudio_health.py -v
+
+# 2. Run transcription smoke tests
+pytest tests/test_fluidaudio_transcription.py -v
+
+# 3. Save JSON baseline for schema comparison
+./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge tests/jfk.wav \
+    --format json > docs/fluidaudio_baseline_0.1.0.json
+
+# 4. Record Package.resolved versions
+cat tools/fluidaudio-bridge/Package.resolved | grep -E '"identity"|"version"'
+
+# 5. Record benchmark timing (save output for comparison)
+.venv/bin/mac-whisper-speedtest -b -m small -n 3 -i FluidAudioCoreMLImplementation
+```
+
+- [ ] All pytest tests pass
+- [ ] Baseline JSON saved
+- [ ] Package.resolved versions recorded (FluidAudio 0.1.0)
+- [ ] Benchmark timing recorded
 
 ### Phase 1 Verification
+
+```bash
+# 1. Run automated tests
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+
+# 2. Verify Package.resolved versions changed correctly
+cat tools/fluidaudio-bridge/Package.resolved | grep -E '"identity"|"version"'
+# Expected: fluidaudio 0.4.x or higher (may resolve to 0.10.x due to SPM behavior)
+```
+
+- [ ] `pytest tests/test_fluidaudio_health.py -v` — all tests pass
+- [ ] `pytest tests/test_fluidaudio_transcription.py -v` — all tests pass
+- [ ] FluidAudio version in Package.resolved is 0.4.x or higher
 - [ ] Swift build completes without errors
+- [ ] No new compiler warnings (or document them)
 - [ ] Bridge --help works
-- [ ] JFK transcription matches baseline
-- [ ] No new deprecation warnings
-- [ ] Benchmark time within 10% of baseline
+- [ ] **Code change applied:** `AsrModels.downloadAndLoad(version: .v2)` added
+- [ ] JFK transcription matches baseline (±20% timing variance acceptable)
 
 ### Phase 2 Verification
+
+```bash
+# 1. Run automated tests
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+
+# 2. Verify Package.resolved versions
+cat tools/fluidaudio-bridge/Package.resolved | grep -E '"identity"|"version"'
+# Expected: fluidaudio 0.8.x or higher
+```
+
 - [ ] All Phase 1 checks pass
+- [ ] FluidAudio version in Package.resolved is 0.8.x or higher
 - [ ] URL-based transcription works (if using new API)
 - [ ] Longer audio (ted_60.wav) works correctly
 - [ ] Progress reporting visible (if implemented)
 
 ### Phase 3 Verification
+
+```bash
+# 1. Run automated tests
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+
+# 2. Verify Package.resolved versions
+cat tools/fluidaudio-bridge/Package.resolved | grep -E '"identity"|"version"'
+# Expected: fluidaudio 0.10.x
+```
+
 - [ ] All Phase 1-2 checks pass
-- [ ] No Swift 6 warnings
+- [ ] FluidAudio version in Package.resolved is 0.10.x
+- [ ] No Swift 6 warnings (or Sendable compliance issues resolved)
 - [ ] Fresh download completes successfully
 - [ ] Model loading time acceptable
 - [ ] Full benchmark suite passes
 
 ### Post-Upgrade Validation
-- [ ] Compare benchmark to baseline (should be equal or faster)
-- [ ] Compare transcription text (should be identical for v2 model)
+
+```bash
+# 1. Generate post-upgrade JSON for comparison
+./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge tests/jfk.wav \
+    --format json > docs/fluidaudio_post_upgrade_0.10.0.json
+
+# 2. Compare JSON structure (keys should match)
+diff <(jq 'keys' docs/fluidaudio_baseline_0.1.0.json) \
+     <(jq 'keys' docs/fluidaudio_post_upgrade_0.10.0.json)
+
+# 3. Run benchmark and compare timing
+.venv/bin/mac-whisper-speedtest -b -m small -n 3 -i FluidAudioCoreMLImplementation
+```
+
+- [ ] JSON schema unchanged (same keys in output)
+- [ ] Benchmark timing within ±20% of baseline (acceptable variance)
+- [ ] Transcription text quality similar (may have minor differences with v2 model)
+- [ ] Test with longer audio if available: `tests/ted_60.wav`
 - [ ] Test timeout behavior (Python 300s timeout still an issue?)
-- [ ] Document any behavior changes
+- [ ] Document any behavior changes in commit message
 
 ---
 
@@ -592,36 +750,70 @@ git branch backup/fluidaudio-v0.1.0
 ### Quick Reference: Upgrade Commands
 
 ```bash
+# === PRE-UPGRADE BASELINE ===
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge tests/jfk.wav \
+    --format json > docs/fluidaudio_baseline_0.1.0.json
+
 # === PHASE 1 ===
-git checkout -b chore/fluidaudio-upgrade-phase1
 # Edit Package.swift: from: "0.4.1"
 cd tools/fluidaudio-bridge && swift package update
 # Edit main.swift: add version: .v2
 swift build -c release
-.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
-git add . && git commit -m "chore(deps): FluidAudio 0.1.0 → 0.4.1"
+cd ../..
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+# Verify: FluidAudio should be 0.4.x or higher
+cat tools/fluidaudio-bridge/Package.resolved | grep fluidaudio -A2
+# User commits after verification
 
 # === PHASE 2 ===
 # Edit Package.swift: from: "0.8.2"
 cd tools/fluidaudio-bridge && swift package update && swift build -c release
-.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
-git add . && git commit -m "chore(deps): FluidAudio 0.4.1 → 0.8.2"
+cd ../..
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+# Verify: FluidAudio should be 0.8.x or higher
+cat tools/fluidaudio-bridge/Package.resolved | grep fluidaudio -A2
+# User commits after verification
 
 # === PHASE 3 ===
 # Edit Package.swift: from: "0.10.0"
 cd tools/fluidaudio-bridge && swift package update && swift build -c release
-.venv/bin/mac-whisper-speedtest -b -m small -n 2 -i FluidAudioCoreMLImplementation
-git add . && git commit -m "chore(deps): FluidAudio 0.8.2 → 0.10.0"
+cd ../..
+pytest tests/test_fluidaudio_health.py tests/test_fluidaudio_transcription.py -v
+# Verify: FluidAudio should be 0.10.x
+cat tools/fluidaudio-bridge/Package.resolved | grep fluidaudio -A2
+# User commits after verification
+
+# === POST-UPGRADE VALIDATION ===
+./tools/fluidaudio-bridge/.build/release/fluidaudio-bridge tests/jfk.wav \
+    --format json > docs/fluidaudio_post_upgrade_0.10.0.json
+diff <(jq 'keys' docs/fluidaudio_baseline_0.1.0.json) \
+     <(jq 'keys' docs/fluidaudio_post_upgrade_0.10.0.json)
 ```
 
 ### Key Takeaways
 
-1. **Don't jump 9 versions at once** — use natural breakpoints
-2. **Explicit is better than implicit** — specify `.v2` model version
-3. **Test at each phase** — catch issues early
-4. **Commit atomically** — one logical change per commit
-5. **Keep lock files** — reproducibility matters
-6. **Plan for rollback** — always have an escape route
+1. **Run tests before AND after each phase** — Catches regressions automatically
+2. **Don't jump 9 versions at once** — use natural breakpoints
+3. **Explicit is better than implicit** — specify `.v2` model version
+4. **SPM `from:` may skip phases** — Use `exact:` constraint to force specific versions
+5. **Test at each phase** — catch issues early
+6. **Commit atomically** — one logical change per commit
+7. **Keep lock files** — reproducibility matters
+8. **Timing variance of ±20% is acceptable** — Don't fail upgrade for minor timing differences
+9. **Plan for rollback** — always have an escape route
+
+### Comparison: FluidAudio vs WhisperKit Upgrades
+
+| Aspect | FluidAudio | WhisperKit |
+|--------|------------|------------|
+| Version gap | 9 minor versions | 2 minor versions |
+| Breaking changes | API enum (critical) | Struct→Class (non-issue for us) |
+| Bridge code changes | **Required** (add `.v2`) | None |
+| Risk level | HIGH | MEDIUM |
+| Effort | Medium-High | Low |
+| Recommended phases | 3 | 2 |
+| JSON output | No segments | Has segments |
 
 ---
 
